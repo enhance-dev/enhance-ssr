@@ -1,6 +1,6 @@
 {
   "name": "@enhance/ssr",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Server-side rendering for custom elements with template and slots support",
   "scripts": {
     "test": "tape ./test/enhance.test.js | tap-arc"

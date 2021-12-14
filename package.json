@@ -13,6 +13,7 @@
     "tape": "^5.2.2"
   },
   "dependencies": {
-    "@begin/parse5": "^0.0.2"
+    "@begin/parse5": "^0.0.2",
+    "cuid": "^2.1.8"
   }
 }

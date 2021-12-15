@@ -11,7 +11,8 @@ module.exports = function Enhancer(options={}) {
 
   return function html(strings, ...values) {
     const doc = parse(render(strings, ...values))
-    const body = doc.childNodes[0].childNodes[1]
+    const html = Array.from(doc.childNodes).find(node => node.nodeName === 'html' && node.tagName === 'html')
+    const body = Array.from(html.childNodes).find(node => node.nodeName === 'body' && node.tagName === 'body')
     const customElements = processCustomElements(body, templates)
     const moduleNames = [...new Set(customElements.map(node =>  node.tagName))]
     const templateTags = fragment(moduleNames.map(name => template(name, templates)).join(''))

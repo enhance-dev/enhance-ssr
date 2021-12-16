@@ -9,7 +9,7 @@
   "author": "kj <kj@begin.com>",
   "license": "Apache-2.0",
   "devDependencies": {
-    "tap-arc": "^0.1.1",
+    "tap-arc": "^0.1.2",
     "tape": "^5.2.2"
   },
   "dependencies": {

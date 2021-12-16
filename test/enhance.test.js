@@ -382,3 +382,33 @@ test('Should pass ID to template render method to use', t=> {
   t.ok(/id\=\"([A-Za-z0-9 _]*)\"/.test(actual))
   t.end()
 })
+
+test('should allow supplying custom head tag', t=> {
+  const actual = html`
+    <head>
+      <title>Yolo!</title>
+    </head>
+    <my-counter count="3"></my-counter>
+    `
+  const expected = `
+<html>
+<head>
+  <title>Yolo!</title>
+</head>
+<body>
+<template id="my-counter-template">
+<h3>Count: 0</h3>
+</template>
+<my-counter count="3"><h3>Count: 3</h3></my-counter>
+<script>Array.from(document.getElementsByTagName("template")).forEach(t => 'SCRIPT' === t.content.lastElementChild.nodeName?document.body.appendChild(t.content.lastElementChild):'')</script>
+</body>
+</html>
+  `
+
+  t.equal(
+    strip(actual),
+    strip(expected),
+    'Can supply custom head tag'
+  )
+  t.end()
+})

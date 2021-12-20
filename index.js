@@ -1,5 +1,4 @@
 const { join } = require('path')
-const cuid = require('cuid')
 const { parse, fragment, serialize } = require('@begin/parse5')
 const isCustomElement = require('./lib/is-custom-element')
 const TEMPLATES = '@architect/views/templates'
@@ -95,8 +94,7 @@ function renderTemplate(tagName, templates, attrs, store) {
     const sandbox = JSON.parse(process.env.ARC_SANDBOX)
     templatePath = join(sandbox.lambdaSrc, 'node_modules', templatePath)
   }
-  const state = Object.assign({ id: cuid.slug() }, attrs ? attrsToState(attrs) : {})
-  return require(templatePath)(state, render, store)
+  return require(templatePath)(attrs ? attrsToState(attrs) : {}, render, store)
 }
 
 function attrsToState(attrs, state={}) {

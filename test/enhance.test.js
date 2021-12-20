@@ -389,12 +389,6 @@ test('fill nested rendered slots', t=> {
   t.end()
 })
 
-test('Should pass ID to template render method to use', t=> {
-  const actual = html`<my-id></my-id>`
-  t.ok(/id\=\"([A-Za-z0-9 _]*)\"/.test(actual))
-  t.end()
-})
-
 test('should allow supplying custom head tag', t=> {
   const actual = html`
     <head>

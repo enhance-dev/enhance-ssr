@@ -1,4 +1,4 @@
-module.exports = function MyLink(state={}) {
+module.exports = function MyLink(state={}, html) {
   const { href='', text='' } = state
   return `
 <a href="${href}">${text}</a>

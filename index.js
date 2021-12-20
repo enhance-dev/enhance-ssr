@@ -6,14 +6,16 @@ const TEMPLATES = '@architect/views/templates'
 
 module.exports = function Enhancer(options={}) {
   const {
-    templates=TEMPLATES
+    templates=TEMPLATES,
+    state={}
   } = options
+  const store = new Proxy (state, {set: ()=> false})
 
   return function html(strings, ...values) {
     const doc = parse(render(strings, ...values))
     const html = doc.childNodes.find(node => node.tagName === 'html')
     const body = html.childNodes.find(node => node.tagName === 'body')
-    const customElements = processCustomElements(body, templates)
+    const customElements = processCustomElements(body, templates, store)
     const moduleNames = [...new Set(customElements.map(node =>  node.tagName))]
     const templateTags = fragment(moduleNames.map(name => template(name, templates)).join(''))
     addTemplateTags(body, templateTags)
@@ -55,13 +57,13 @@ function encode(value) {
   }
 }
 
-function processCustomElements(node, templates) {
+function processCustomElements(node, templates, store) {
   const elements = []
   const find = (node) => {
     for (const child of node.childNodes) {
       if (isCustomElement(child.tagName)) {
         elements.push(child)
-        const template = expandTemplate(child, templates)
+        const template = expandTemplate(child, templates, store)
         fillSlots(child, template)
         const nodeChildNodes = child.childNodes
         nodeChildNodes.splice(
@@ -77,8 +79,8 @@ function processCustomElements(node, templates) {
   return elements
 }
 
-function expandTemplate(node, templates) {
-  const frag = fragment(renderTemplate(node.tagName, templates, node.attrs) || '')
+function expandTemplate(node, templates, store) {
+  const frag = fragment(renderTemplate(node.tagName, templates, node.attrs, store) || '')
   for (const node of frag.childNodes) {
     if (node.nodeName === 'script') {
       frag.childNodes.splice(frag.childNodes.indexOf(node), 1)
@@ -87,14 +89,14 @@ function expandTemplate(node, templates) {
   return frag
 }
 
-function renderTemplate(tagName, templates, attrs) {
+function renderTemplate(tagName, templates, attrs, store) {
   let templatePath = `${templates}/${tagName}.js`
   if (process.env.ARC_SANDBOX) {
     const sandbox = JSON.parse(process.env.ARC_SANDBOX)
     templatePath = join(sandbox.lambdaSrc, 'node_modules', templatePath)
   }
   const state = Object.assign({ id: cuid.slug() }, attrs ? attrsToState(attrs) : {})
-  return require(templatePath)(state, render)
+  return require(templatePath)(state, render, store)
 }
 
 function attrsToState(attrs, state={}) {

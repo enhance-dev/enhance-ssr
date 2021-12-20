@@ -1,7 +1,5 @@
 const test = require('tape')
 const enhance = require('..')
-// Timed version
-//import enhance from '../timed.js'
 const strip = str => str.replace(/\r?\n|\r|\s\s+/g, '')
 
 function doc(string) {
@@ -410,5 +408,51 @@ test('should allow supplying custom head tag', t=> {
     strip(expected),
     'Can supply custom head tag'
   )
+  t.end()
+})
+
+test('should pass store to template', t => {
+  const state = {
+    apps: [
+      {
+        id: 1,
+        name: 'one',
+        users: [
+          {
+            id: 1,
+            name: 'jim'
+          },
+          {
+            id: 2,
+            name: 'kim'
+          },
+          {
+            id: 3,
+            name: 'phillip'
+          }
+        ]
+      }
+    ]
+  }
+  const html = enhance({
+    templates: './test/fixtures/templates',
+    state
+  })
+  const actual = html`<my-store-data app-index="0" user-index="1"></my-store-data>`
+  const expected = doc(`
+<template id="my-store-data-template">
+  <div>
+    <h1></h1>
+    <h1></h1>
+  </div>
+</template>
+<my-store-data app-index="0" user-index="1">
+  <div>
+    <h1>kim</h1>
+    <h1>2</h1>
+  </div>
+</my-store-data>
+  `)
+  t.equal(strip(actual), strip(expected), 'Should render store data')
   t.end()
 })

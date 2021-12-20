@@ -48,9 +48,7 @@ function render(strings, ...values) {
 const state = {}
 let place = 0
 function encode(value) {
-  if (typeof value !== 'string' ||
-      typeof value !== 'number' ||
-      typeof value !== 'boolean') {
+  if (typeof value !== 'string') {
     const id = `__b_${place++}`
     state[id] = value
     return id

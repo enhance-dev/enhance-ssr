@@ -59,6 +59,20 @@ test('expand template', t=> {
   t.end()
 })
 
+test('Passing state through multiple levels', t=> {
+  const items = ['test']
+  const actual = html`<my-pre-page items="${items}"></my-pre-page>`
+  const expected = doc(`
+  <template id="my-pre-page-template"><my-pre items=""></my-pre></template><template id="my-pre-template"><pre></pre></template><my-pre-page items=""><my-pre items=""><pre>test</pre></my-pre></my-pre-page>
+`)
+  t.equal(
+    strip(actual),
+    strip(expected),
+    'state makes it to the inner component render'
+  )
+  t.end()
+})
+
 test('fill named slot', t=> {
   const actual = html`
 <my-paragraph>

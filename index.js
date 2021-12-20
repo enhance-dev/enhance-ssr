@@ -2,7 +2,6 @@ const { join } = require('path')
 const cuid = require('cuid')
 const { parse, fragment, serialize } = require('@begin/parse5')
 const isCustomElement = require('./lib/is-custom-element')
-const { type } = require('os')
 const TEMPLATES = '@architect/views/templates'
 
 module.exports = function Enhancer(options={}) {

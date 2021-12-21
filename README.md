@@ -2,11 +2,8 @@
 
 Server sider render for [custom elements](https://developer.mozilla.org/en-US/docs/Web/Web_Components/Using_custom_elements).
 
-# 🔥 Author your pages with single file Web Components!
+Enhance enables a [web component](https://developer.mozilla.org/en-US/docs/Web/Web_Components) workflow that embraces [templates and slots](https://developer.mozilla.org/en-US/docs/Web/Web_Components/Using_templates_and_slots).
 
-It enables a [web component](https://developer.mozilla.org/en-US/docs/Web/Web_Components) workflow that embraces [templates and slots](https://developer.mozilla.org/en-US/docs/Web/Web_Components/Using_templates_and_slots).
-
-Enhance works really well with [Architect](arc.codes).
 
 ## Install
 `npm i @enhance/ssr`
@@ -17,13 +14,16 @@ const html = require('@enhance/ssr')()
 console.log(html`<hello-world greeting="Well hi!"></hello-world>`)
 ```
 
-By default enhance looks for templates in your projects `/src/views/templates` directory but you can configure where it should look by passing an options object.
+By default enhance looks for templates in your projects `/src/views/templates` directory. 
+Configure where it should look by passing a `templates` option in a configuration object.
 ```javascript
 const html = require('@enhance/ssr')({ templates: '/components' })
 console.log(html`<hello-world greeting="Well hi!"></hello-world>`)
 ```
+> ⚠️ `templates` supports any path `require` can. 
 
-An example template used for Server Side Rendering
+An example template for use in Server Side Rendering
+
 ```javascript
 // Template
 module.exports = function HelloWorldTemplate(state={}, html) {
@@ -42,7 +42,7 @@ module.exports = function HelloWorldTemplate(state={}, html) {
       class HelloWorld extends HTMLElement {
         constructor () {
           super()
-          const template = document.getElementById('single-file')
+          const template = document.getElementById('hello-world-template')
           this.attachShadow({ mode: 'open' })
             .appendChild(template.content.cloneNode(true))
         }
@@ -88,3 +88,25 @@ The template added to the server rendered HTML page
   </script>
 </template>
 ```
+
+Supply initital state to enhance and it will be passed as the third argument to your template functions.
+```javascript
+// Template
+module.exports = function MyStoreData(state, html, store) {
+  const appIndex = state['app-index']
+  const userIndex = state['user-index']
+  const { id='', name='' } = store?.apps?.[appIndex]?.users?.[userIndex] || {}
+  return `
+<div>
+  <h1>${name}</h1>
+  <h1>${id}</h1>
+</div>
+  `
+}
+```
+Attribute state can be used to pass default state to the backing Web Component. 
+Store is used to pass previously stored data, in an easy to access way, to all components in the tree.
+
+> ⚠️ Enhance renders one line of JavaScript into the page for extracting script tags from your templates.
+
+P.S. Enhance works really well with [Architect](arc.codes).

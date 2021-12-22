@@ -90,6 +90,16 @@ The template added to the server rendered HTML page
 ```
 
 Supply initital state to enhance and it will be passed as the third argument to your template functions.
+#### Node
+```javascript
+const enhance = require('@enhance/ssr')
+const html = enhance({
+  templates: '@architect/views/templates',
+  { apps: [ { users: [ { name: 'tim', id: 001 }, { name: 'kim', id: 002 } ] } ] }
+})
+console.log(html`<my-store-data app-index="0" user-index="1"></my-store-data>`)
+```
+### Template
 ```javascript
 // Template
 module.exports = function MyStoreData(state, html, store) {

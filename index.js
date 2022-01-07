@@ -214,6 +214,6 @@ function addTemplateTags(body, templates) {
 }
 
 function addScriptStripper(body) {
- const stripper = fragment(`<script>Array.from(document.getElementsByTagName("template")).forEach(t => 'SCRIPT' === t.content.lastElementChild.nodeName?document.body.appendChild(t.content.lastElementChild):'')</script>`)
+ const stripper = fragment(`<script>Array.from(document.getElementsByTagName("template")).forEach(t => t.content.lastElementChild && 'SCRIPT' === t.content.lastElementChild.nodeName?document.body.appendChild(t.content.lastElementChild):'')</script>`)
  body.childNodes.push(...stripper.childNodes)
 }

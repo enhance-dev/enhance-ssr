@@ -1,9 +1,8 @@
 const test = require('tape')
 const enhance = require('..')
 const strip = str => str.replace(/\r?\n|\r|\s\s+/g, '')
-
 function doc(string) {
-  return `<html><head></head><body>${string}<script>Array.from(document.getElementsByTagName("template")).forEach(t => 'SCRIPT' === t.content.lastElementChild.nodeName?document.body.appendChild(t.content.lastElementChild):'')</script></body></html>`
+  return `<html><head></head><body>${string}<script>Array.from(document.getElementsByTagName("template")).forEach(t => t.content.lastElementChild && 'SCRIPT' === t.content.lastElementChild.nodeName?document.body.appendChild(t.content.lastElementChild):'')</script></body></html>`
 }
 
 const html = enhance({
@@ -406,7 +405,7 @@ test('should allow supplying custom head tag', t=> {
 <h3>Count: 0</h3>
 </template>
 <my-counter count="3"><h3>Count: 3</h3></my-counter>
-<script>Array.from(document.getElementsByTagName("template")).forEach(t => 'SCRIPT' === t.content.lastElementChild.nodeName?document.body.appendChild(t.content.lastElementChild):'')</script>
+<script>Array.from(document.getElementsByTagName("template")).forEach(t => t.content.lastElementChild && 'SCRIPT' === t.content.lastElementChild.nodeName?document.body.appendChild(t.content.lastElementChild):'')</script>
 </body>
 </html>
   `

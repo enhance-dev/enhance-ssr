@@ -1,5 +1,5 @@
-module.exports = function MyPage(state={}, html) {
-  const { items=[] } = state
+export default function MyPage(html, state={}) {
+  const { items=[] } = state?.attrs
   return html`
 <h1>My Page</h1>
 <my-content items=${items}>

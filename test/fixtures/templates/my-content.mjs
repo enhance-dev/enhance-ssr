@@ -1,4 +1,4 @@
-module.exports = function MyContent(state={}, html) {
+export default function MyContent(html, state={}) {
   return html`
 <h2>My Content</h2>
 <slot name=title>

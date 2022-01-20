@@ -1,5 +1,5 @@
-const test = require('tape')
-const enhance = require('..')
+import test from 'tape'
+import enhance from '../index.mjs'
 const strip = str => str.replace(/\r?\n|\r|\s\s+/g, '')
 function doc(string) {
   return `<html><head></head><body>${string}<script>Array.from(document.getElementsByTagName("template")).forEach(t => t.content.lastElementChild && 'SCRIPT' === t.content.lastElementChild.nodeName?document.body.appendChild(t.content.lastElementChild):'')</script></body></html>`

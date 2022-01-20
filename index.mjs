@@ -1,14 +1,14 @@
-const { join } = require('path')
-const { parse, fragment, serialize } = require('@begin/parse5')
-const isCustomElement = require('./lib/is-custom-element')
+import { join } from 'path'
+import { parse, fragment, serialize } from '@begin/parse5'
+import isCustomElement from './lib/is-custom-element.mjs'
 const TEMPLATES = '@architect/views/templates'
 
-module.exports = function Enhancer(options={}) {
+export default function Enhancer(options={}) {
   const {
     templates=TEMPLATES,
     state={}
   } = options
-  const store = new Proxy (state, {set: ()=> false})
+  const store = Object.assign(state, {})
 
   return function html(strings, ...values) {
     const doc = parse(render(strings, ...values))
@@ -88,16 +88,19 @@ function expandTemplate(node, templates, store) {
   return frag
 }
 
-function renderTemplate(tagName, templates, attrs, store) {
-  let templatePath = `${templates}/${tagName}.js`
+function renderTemplate(tagName, templates, attrs=[], store={}) {
+  const templatePath = `${templates}/${tagName}.mjs`
   if (process.env.ARC_SANDBOX) {
     const sandbox = JSON.parse(process.env.ARC_SANDBOX)
     templatePath = join(sandbox.lambdaSrc, 'node_modules', templatePath)
   }
-  return require(templatePath)(attrs ? attrsToState(attrs) : {}, render, store)
+  store.attrs = attrs ? attrsToState(attrs) : {}
+  let rendered = ''
+  import(templatePath).then(mod => { rendered = mod(render, store) })
+  return rendered
 }
 
-function attrsToState(attrs, state={}) {
+function attrsToState(attrs=[], state={}) {
   [...attrs].forEach(attr => state[attr.name] = decode(attr.value))
   return state
 }

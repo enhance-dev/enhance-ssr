@@ -1,12 +1,11 @@
 import { join } from 'path'
 import { parse, fragment, serialize } from '@begin/parse5'
 import isCustomElement from './lib/is-custom-element.mjs'
-const TEMPLATES = '@architect/views/templates'
 
 export default function Enhancer(options={}) {
   const {
-    templates=TEMPLATES,
-    state={}
+    state={},
+    templates
   } = options
   const store = Object.assign(state, {})
 
@@ -89,15 +88,9 @@ function expandTemplate(node, templates, store) {
 }
 
 function renderTemplate(tagName, templates, attrs=[], store={}) {
-  const templatePath = `${templates}/${tagName}.mjs`
-  if (process.env.ARC_SANDBOX) {
-    const sandbox = JSON.parse(process.env.ARC_SANDBOX)
-    templatePath = join(sandbox.lambdaSrc, 'node_modules', templatePath)
-  }
   store.attrs = attrs ? attrsToState(attrs) : {}
-  let rendered = ''
-  import(templatePath).then(mod => { rendered = mod(render, store) })
-  return rendered
+  console.log('STORE: ', store)
+  return templates[tagName](render, store)
 }
 
 function attrsToState(attrs=[], state={}) {

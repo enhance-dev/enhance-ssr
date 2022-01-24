@@ -1,12 +1,37 @@
 import test from 'tape'
 import enhance from '../index.mjs'
+import MyContent from './fixtures/templates/my-content.mjs'
+import MyCounter from './fixtures/templates/my-counter.mjs'
+import MyId from './fixtures/templates/my-id.mjs'
+import MyLink from './fixtures/templates/my-link.mjs'
+import MyListContainer from './fixtures/templates/my-list-container.mjs'
+import MyList from './fixtures/templates/my-list.mjs'
+import MyPage from './fixtures/templates/my-page.mjs'
+import MyParagraph from './fixtures/templates/my-paragraph.mjs'
+import MyPrePage from './fixtures/templates/my-pre-page.mjs'
+import MyPre from './fixtures/templates/my-pre.mjs'
+import MyStoreData from './fixtures/templates/my-store-data.mjs'
+const templates = {
+  'my-content': MyContent,
+  'my-counter': MyCounter,
+  'my-id': MyId,
+  'my-link': MyLink,
+  'my-list-container': MyListContainer,
+  'my-list': MyList,
+  'my-page': MyPage,
+  'my-paragraph': MyParagraph,
+  'my-pre-page': MyPrePage,
+  'my-pre': MyPre,
+  'my-store-data': MyStoreData
+}
+
 const strip = str => str.replace(/\r?\n|\r|\s\s+/g, '')
 function doc(string) {
   return `<html><head></head><body>${string}<script>Array.from(document.getElementsByTagName("template")).forEach(t => t.content.lastElementChild && 'SCRIPT' === t.content.lastElementChild.nodeName?document.body.appendChild(t.content.lastElementChild):'')</script></body></html>`
 }
 
 const html = enhance({
-  templates: './test/fixtures/templates'
+  templates
 })
 
 test('Enhance should', t => {
@@ -418,7 +443,7 @@ test('should allow supplying custom head tag', t=> {
   t.end()
 })
 
-test('should pass store to template', t => {
+test.only('should pass store to template', t => {
   const state = {
     apps: [
       {
@@ -442,7 +467,7 @@ test('should pass store to template', t => {
     ]
   }
   const html = enhance({
-    templates: './test/fixtures/templates',
+    templates,
     state
   })
   const actual = html`<my-store-data app-index="0" user-index="1"></my-store-data>`

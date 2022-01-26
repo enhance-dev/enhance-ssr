@@ -1,7 +1,8 @@
 export default function MyStoreData(html, state) {
-  const appIndex = state.attrs['app-index']
-  const userIndex = state.attrs['user-index']
-  const { id='', name='' } = state?.apps?.[appIndex]?.users?.[userIndex] || {}
+  const { attrs, store } = state
+  const appIndex = attrs['app-index']
+  const userIndex = attrs['user-index']
+  const { id, name='' } = store?.apps?.[appIndex]?.users?.[userIndex] || {}
   return html`
 <div>
   <h1>${name}</h1>

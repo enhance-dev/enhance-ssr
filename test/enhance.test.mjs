@@ -11,7 +11,7 @@ import MyParagraph from './fixtures/templates/my-paragraph.mjs'
 import MyPrePage from './fixtures/templates/my-pre-page.mjs'
 import MyPre from './fixtures/templates/my-pre.mjs'
 import MyStoreData from './fixtures/templates/my-store-data.mjs'
-const templates = {
+const elements = {
   'my-content': MyContent,
   'my-counter': MyCounter,
   'my-id': MyId,
@@ -31,7 +31,7 @@ function doc(string) {
 }
 
 const html = enhance({
-  templates
+  elements
 })
 
 test('Enhance should', t => {
@@ -202,42 +202,6 @@ test('pass attributes as state', t=> {
     strip(actual),
     strip(expected),
     'passes attributes as a state object when executing template functions'
-  )
-  t.end()
-})
-
-test('support spread of object attributes', t=> {
-  const o = {
-    href: '/yolo',
-    text: 'sketchy',
-    customAttribute: true
-  }
-  const actual = html`
-<my-link ...${o}></my-link>
-`
-  const expected = doc(`
-<template id="my-link-template">
-  <a href=""></a>
-  <script type="module">
-    class MyLink extends HTMLElement {
-      constructor() {
-        super()
-      }
-
-      connectedCallback() {
-        console.log('My Link')
-      }
-    }
-  </script>
-</template>
-<my-link href="/yolo" text="sketchy" custom-attribute="custom-attribute">
-  <a href="/yolo">sketchy</a>
-</my-link>
-`)
-  t.equal(
-    strip(actual),
-    strip(expected),
-    'supports spread operator for expanding entire object as attributes'
   )
   t.end()
 })
@@ -443,8 +407,8 @@ test('should allow supplying custom head tag', t=> {
   t.end()
 })
 
-test.only('should pass store to template', t => {
-  const state = {
+test('should pass store to template', t => {
+  const initialState = {
     apps: [
       {
         id: 1,
@@ -467,8 +431,8 @@ test.only('should pass store to template', t => {
     ]
   }
   const html = enhance({
-    templates,
-    state
+    elements,
+    initialState
   })
   const actual = html`<my-store-data app-index="0" user-index="1"></my-store-data>`
   const expected = doc(`

@@ -1,4 +1,4 @@
-export default function MyLink(html, state={}) {
+export default function MyLink({ html, state }) {
   const { href='', text='' } = state?.attrs
   return html`
 <a href="${href}">${text}</a>

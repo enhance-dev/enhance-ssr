@@ -1,4 +1,4 @@
-export default function MyStoreData(html, state) {
+export default function MyStoreData({ html, state }) {
   const { attrs, store } = state
   const appIndex = attrs['app-index']
   const userIndex = attrs['user-index']

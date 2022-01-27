@@ -67,7 +67,13 @@ function expandTemplate(node, elements, store) {
 
 function renderTemplate(tagName, elements, attrs=[], store={}) {
   attrs = attrs ? attrsToState(attrs) : {}
-  return elements[tagName](render, { attrs, store })
+  const state = { attrs, store }
+  try {
+    return elements[tagName]({ html:render, state })
+  }
+  catch(err) {
+    throw new Error(`Issue rendering template for ${tagName}.\n${err.message}`)
+  }
 }
 
 function attrsToState(attrs=[], obj={}) {

@@ -1,4 +1,4 @@
-export default function MyList(html, state={}) {
+export default function MyList({ html, state }) {
   const items = state?.attrs?.items || []
   const listItems = items &&
     items.map &&

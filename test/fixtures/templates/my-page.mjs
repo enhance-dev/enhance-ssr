@@ -1,4 +1,4 @@
-export default function MyPage(html, state={}) {
+export default function MyPage({ html, state }) {
   const { items=[] } = state?.attrs
   return html`
 <h1>My Page</h1>

@@ -120,8 +120,7 @@ Store is used to pass previously stored data, in an easy to access way, to all c
 ### Slots
 Enhance supports the use of [`slots` in your custom element templates](https://developer.mozilla.org/en-US/docs/Web/Web_Components/Using_templates_and_slots).
 ```javascript
-export default function MyCustomElement({ html, state }) {
-  const { attrs, store } = state
+export default function MyCustomElement({ html }) {
   return html`
 <p>
   <slot name="my-text">

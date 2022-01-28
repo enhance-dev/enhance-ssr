@@ -1,12 +1,37 @@
-const test = require('tape')
-const enhance = require('..')
+import test from 'tape'
+import enhance from '../index.mjs'
+import MyContent from './fixtures/templates/my-content.mjs'
+import MyCounter from './fixtures/templates/my-counter.mjs'
+import MyId from './fixtures/templates/my-id.mjs'
+import MyLink from './fixtures/templates/my-link.mjs'
+import MyListContainer from './fixtures/templates/my-list-container.mjs'
+import MyList from './fixtures/templates/my-list.mjs'
+import MyPage from './fixtures/templates/my-page.mjs'
+import MyParagraph from './fixtures/templates/my-paragraph.mjs'
+import MyPrePage from './fixtures/templates/my-pre-page.mjs'
+import MyPre from './fixtures/templates/my-pre.mjs'
+import MyStoreData from './fixtures/templates/my-store-data.mjs'
+const elements = {
+  'my-content': MyContent,
+  'my-counter': MyCounter,
+  'my-id': MyId,
+  'my-link': MyLink,
+  'my-list-container': MyListContainer,
+  'my-list': MyList,
+  'my-page': MyPage,
+  'my-paragraph': MyParagraph,
+  'my-pre-page': MyPrePage,
+  'my-pre': MyPre,
+  'my-store-data': MyStoreData
+}
+
 const strip = str => str.replace(/\r?\n|\r|\s\s+/g, '')
 function doc(string) {
   return `<html><head></head><body>${string}<script>Array.from(document.getElementsByTagName("template")).forEach(t => t.content.lastElementChild && 'SCRIPT' === t.content.lastElementChild.nodeName?document.body.appendChild(t.content.lastElementChild):'')</script></body></html>`
 }
 
 const html = enhance({
-  templates: './test/fixtures/templates'
+  elements
 })
 
 test('Enhance should', t => {
@@ -177,42 +202,6 @@ test('pass attributes as state', t=> {
     strip(actual),
     strip(expected),
     'passes attributes as a state object when executing template functions'
-  )
-  t.end()
-})
-
-test('support spread of object attributes', t=> {
-  const o = {
-    href: '/yolo',
-    text: 'sketchy',
-    customAttribute: true
-  }
-  const actual = html`
-<my-link ...${o}></my-link>
-`
-  const expected = doc(`
-<template id="my-link-template">
-  <a href=""></a>
-  <script type="module">
-    class MyLink extends HTMLElement {
-      constructor() {
-        super()
-      }
-
-      connectedCallback() {
-        console.log('My Link')
-      }
-    }
-  </script>
-</template>
-<my-link href="/yolo" text="sketchy" custom-attribute="custom-attribute">
-  <a href="/yolo">sketchy</a>
-</my-link>
-`)
-  t.equal(
-    strip(actual),
-    strip(expected),
-    'supports spread operator for expanding entire object as attributes'
   )
   t.end()
 })
@@ -419,7 +408,7 @@ test('should allow supplying custom head tag', t=> {
 })
 
 test('should pass store to template', t => {
-  const state = {
+  const initialState = {
     apps: [
       {
         id: 1,
@@ -442,8 +431,8 @@ test('should pass store to template', t => {
     ]
   }
   const html = enhance({
-    templates: './test/fixtures/templates',
-    state
+    elements,
+    initialState
   })
   const actual = html`<my-store-data app-index="0" user-index="1"></my-store-data>`
   const expected = doc(`

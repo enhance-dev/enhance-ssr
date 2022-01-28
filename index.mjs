@@ -1,23 +1,22 @@
-const { join } = require('path')
-const { parse, fragment, serialize } = require('@begin/parse5')
-const isCustomElement = require('./lib/is-custom-element')
-const TEMPLATES = '@architect/views/templates'
+import { parse, fragment, serialize } from '@begin/parse5'
+import isCustomElement from './lib/is-custom-element.mjs'
+import { encode, decode } from './lib/transcode.mjs'
 
-module.exports = function Enhancer(options={}) {
+export default function Enhancer(options={}) {
   const {
-    templates=TEMPLATES,
-    state={}
+    initialState={},
+    elements
   } = options
-  const store = new Proxy (state, {set: ()=> false})
+  const store = Object.assign({}, initialState)
 
   return function html(strings, ...values) {
     const doc = parse(render(strings, ...values))
     const html = doc.childNodes.find(node => node.tagName === 'html')
     const body = html.childNodes.find(node => node.tagName === 'body')
-    const customElements = processCustomElements(body, templates, store)
+    const customElements = processCustomElements(body, elements, store)
     const moduleNames = [...new Set(customElements.map(node =>  node.tagName))]
-    const templateTags = fragment(moduleNames.map(name => template(name, templates)).join(''))
-    addTemplateTags(body, templateTags)
+    const templates = fragment(moduleNames.map(name => template(name, elements)).join(''))
+    addTemplateTags(body, templates)
     addScriptStripper(body)
     return serialize(doc).replace(/__b_\d+/g, '')
   }
@@ -31,38 +30,16 @@ function render(strings, ...values) {
   collect.push(strings[strings.length - 1])
 
   return collect.join('')
-    .replace(/\.\.\.\s?(__b_\d+)/, (_, v) => {
-      const o = state[v]
-      return Object.entries(o)
-        .map(([key, value]) => {
-          const k = key.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase()
-          if (value === true) return `${k}="${k}"`
-          else if (value) return `${k}="${encode(value)}" `
-          else return ''
-        }).filter(Boolean).join('')
-    })
 }
 
-const state = {}
-let place = 0
-function encode(value) {
-  if (typeof value !== 'string') {
-    const id = `__b_${place++}`
-    state[id] = value
-    return id
-  }
-  else {
-    return value
-  }
-}
 
-function processCustomElements(node, templates, store) {
-  const elements = []
+function processCustomElements(node, elements, store) {
+  const processedElements = []
   const find = (node) => {
     for (const child of node.childNodes) {
       if (isCustomElement(child.tagName)) {
-        elements.push(child)
-        const template = expandTemplate(child, templates, store)
+        processedElements.push(child)
+        const template = expandTemplate(child, elements, store)
         fillSlots(child, template)
         const nodeChildNodes = child.childNodes
         nodeChildNodes.splice(
@@ -75,11 +52,11 @@ function processCustomElements(node, templates, store) {
     }
   }
   find(node)
-  return elements
+  return processedElements
 }
 
-function expandTemplate(node, templates, store) {
-  const frag = fragment(renderTemplate(node.tagName, templates, node.attrs, store) || '')
+function expandTemplate(node, elements, store) {
+  const frag = fragment(renderTemplate(node.tagName, elements, node.attrs, store) || '')
   for (const node of frag.childNodes) {
     if (node.nodeName === 'script') {
       frag.childNodes.splice(frag.childNodes.indexOf(node), 1)
@@ -88,24 +65,20 @@ function expandTemplate(node, templates, store) {
   return frag
 }
 
-function renderTemplate(tagName, templates, attrs, store) {
-  let templatePath = `${templates}/${tagName}.js`
-  if (process.env.ARC_SANDBOX) {
-    const sandbox = JSON.parse(process.env.ARC_SANDBOX)
-    templatePath = join(sandbox.lambdaSrc, 'node_modules', templatePath)
+function renderTemplate(tagName, elements, attrs=[], store={}) {
+  attrs = attrs ? attrsToState(attrs) : {}
+  const state = { attrs, store }
+  try {
+    return elements[tagName]({ html:render, state })
   }
-  return require(templatePath)(attrs ? attrsToState(attrs) : {}, render, store)
+  catch(err) {
+    throw new Error(`Issue rendering template for ${tagName}.\n${err.message}`)
+  }
 }
 
-function attrsToState(attrs, state={}) {
-  [...attrs].forEach(attr => state[attr.name] = decode(attr.value))
-  return state
-}
-
-function decode(value) {
-  return value.startsWith('__b_')
-    ? state[value]
-    : value
+function attrsToState(attrs=[], obj={}) {
+  [...attrs].forEach(attr => obj[attr.name] = decode(attr.value))
+  return obj
 }
 
 function fillSlots(node, template) {

@@ -1,4 +1,4 @@
-module.exports = function MyParagraph() {
+export default function MyParagraph() {
   return `
 <p>
   <slot name="my-text">

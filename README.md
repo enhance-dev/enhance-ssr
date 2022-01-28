@@ -11,7 +11,8 @@ Enhance enables a [web component](https://developer.mozilla.org/en-US/docs/Web/W
 ## Usage
 ```javascript
 import HelloWorld from './path/to/elements/hello-world.mjs'
-const html = require('@enhance/ssr')({
+import enhance from '@enhance/ssr'
+const html = enhance({
   elements: {
     'hello-world': HelloWorld
   }

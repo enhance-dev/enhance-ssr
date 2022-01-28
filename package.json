@@ -2,6 +2,12 @@
   "name": "@enhance/ssr",
   "version": "2.0.0",
   "description": "Server-side rendering for custom elements with template and slots support",
+  "author": "kj <kj@begin.com>",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/enhance-dev/enhance-ssr.git"
+  },
   "engines": {
     "node": ">=14.0.0"
   },
@@ -10,14 +16,21 @@
   "scripts": {
     "test": "tape-es ./test/enhance.test.mjs | tap-arc"
   },
-  "keywords": [],
-  "author": "kj <kj@begin.com>",
-  "license": "Apache-2.0",
+  "dependencies": {
+    "@begin/parse5": "^0.0.2"
+  },
   "devDependencies": {
     "tap-arc": "^0.1.2",
     "tape-es": "^1.2.17"
   },
-  "dependencies": {
-    "@begin/parse5": "^0.0.2"
-  }
+  "keywords": [
+    "Enhance",
+    "HTML",
+    "Server Side Rendering",
+    "server-side-rendering",
+    "SSR",
+    "Web Components",
+    "web-components",
+    "webcomponents"
+  ]
 }

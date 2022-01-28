@@ -10,25 +10,20 @@ Enhance enables a [web component](https://developer.mozilla.org/en-US/docs/Web/W
 
 ## Usage
 ```javascript
-const html = require('@enhance/ssr')()
+import HelloWorld from './path/to/elements/hello-world.mjs'
+const html = require('@enhance/ssr')({
+  elements: {
+    'hello-world': HelloWorld
+  }
+})
 console.log(html`<hello-world greeting="Well hi!"></hello-world>`)
 ```
-
-By default enhance looks for templates in your projects `/src/views/templates` directory. 
-Configure where it should look by passing a `templates` option in a configuration object.
+### An example custom element template for use in Server Side Rendering
+Attributes added to the custom element in your markup will be passed in the `attrs` object nested in the passed `state` object.
 ```javascript
-const html = require('@enhance/ssr')({ templates: '/components' })
-console.log(html`<hello-world greeting="Well hi!"></hello-world>`)
-```
-> ⚠️ `templates` supports any path `require` can. 
-
-An example template for use in Server Side Rendering
-
-```javascript
-// Template
-module.exports = function HelloWorldTemplate(state={}, html) {
-  const { greeting='Hello World' } = state
-
+export default function HelloWorld({ html, state }) {
+  const { attrs } = state
+  const { greeting='Hello World' } = attrs
   return html`
     <style>
       h1 {
@@ -89,22 +84,26 @@ The template added to the server rendered HTML page
 </template>
 ```
 
-Supply initital state to enhance and it will be passed as the third argument to your template functions.
+Supply initital state to enhance and it will be passed along in a `store` object nested inside the state object.
 #### Node
 ```javascript
-const enhance = require('@enhance/ssr')
+import MyStoreData from './path/to/elements/my-store-data.mjs'
+import enhance from '@enhance/ssr'
 const html = enhance({
-  templates: '@architect/views/templates',
-  { apps: [ { users: [ { name: 'tim', id: 001 }, { name: 'kim', id: 002 } ] } ] }
+  elements: {
+    'my-store-data': MyStoreData
+  },
+  initialState: { apps: [ { users: [ { name: 'tim', id: 001 }, { name: 'kim', id: 002 } ] } ] }
 })
 console.log(html`<my-store-data app-index="0" user-index="1"></my-store-data>`)
 ```
 ### Template
 ```javascript
 // Template
-module.exports = function MyStoreData(state, html, store) {
-  const appIndex = state['app-index']
-  const userIndex = state['user-index']
+export default function MyStoreData({ html, state }) {
+  const { attrs, store } = state
+  const appIndex = attrs['app-index']
+  const userIndex = attrs['user-index']
   const { id='', name='' } = store?.apps?.[appIndex]?.users?.[userIndex] || {}
   return `
 <div>
@@ -116,6 +115,27 @@ module.exports = function MyStoreData(state, html, store) {
 ```
 Attribute state can be used to pass default state to the backing Web Component. 
 Store is used to pass previously stored data, in an easy to access way, to all components in the tree.
+
+### Slots
+Enhance supports the use of [`slots` in your custom element templates](https://developer.mozilla.org/en-US/docs/Web/Web_Components/Using_templates_and_slots).
+```javascript
+export default function MyCustomElement({ html, state }) {
+  const { attrs, store } = state
+  return html`
+<p>
+  <slot name="my-text">
+    My default text
+  </slot>
+</p>
+  `
+}
+```
+You can override the default text by adding a slot attribute with a value that matches the slot name you want to replace.
+```html
+<my-paragraph>
+  <span slot="my-text">Let's have some different text!</span>
+</my-paragraph>
+```
 
 > ⚠️ Enhance renders one line of JavaScript into the page for extracting script tags from your templates.
 

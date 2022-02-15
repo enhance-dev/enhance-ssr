@@ -49,7 +49,7 @@ test('return an html function', t => {
   t.end()
 })
 
-test('expand template', t=> {
+test.only('expand template', t=> {
   const actual = html`<my-paragraph></my-paragraph>`
   const expected = doc(`
 <template id="my-paragraph-template">
@@ -68,11 +68,14 @@ test('expand template', t=> {
         console.log('My Paragraph')
       }
     }
+    customElements.define('my-paragraph', MyParagraph)
   </script>
 </template>
 
 <my-paragraph>
-  <p><slot name="my-text">My default text</slot></p>
+  <p>
+    <span slot="my-text">My default text</span>
+  </p>
 </my-paragraph>
 `)
   t.equal(

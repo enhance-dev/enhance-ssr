@@ -15,6 +15,7 @@ export default function MyParagraph() {
       console.log('My Paragraph')
     }
   }
+  customElements.define('my-paragraph', MyParagraph)
 </script>
 `
 }

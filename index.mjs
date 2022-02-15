@@ -158,6 +158,7 @@ function findInserts(node) {
     for (const child of node.childNodes) {
       const attrs = child.attrs
       if (attrs) {
+        console.log('ATTRS: ', attrs)
         for (let i=0; i < attrs.length; i++) {
           if (attrs[i].name === 'slot') {
             elements.push(child)

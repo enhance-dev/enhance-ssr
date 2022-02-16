@@ -2,6 +2,7 @@ import test from 'tape'
 import enhance from '../index.mjs'
 import MyContent from './fixtures/templates/my-content.mjs'
 import MyCounter from './fixtures/templates/my-counter.mjs'
+import MyHeading from './fixtures/my-heading.mjs'
 import MyId from './fixtures/templates/my-id.mjs'
 import MyLink from './fixtures/templates/my-link.mjs'
 import MyListContainer from './fixtures/templates/my-list-container.mjs'
@@ -14,6 +15,7 @@ import MyStoreData from './fixtures/templates/my-store-data.mjs'
 const elements = {
   'my-content': MyContent,
   'my-counter': MyCounter,
+  'my-heading': MyHeading,
   'my-id': MyId,
   'my-link': MyLink,
   'my-list-container': MyListContainer,
@@ -49,7 +51,53 @@ test('return an html function', t => {
   t.end()
 })
 
-test.only('expand template', t=> {
+test('should render slot attribute to name attribute', t => {
+  const actual = html`<my-heading></my-heading>`
+  const expected = doc(`
+<template id="my-heading-template">
+  <slot name="heading">
+    <h1>
+      My default text
+    </h1>
+  </slot>
+  <script type="module">
+    class MyHeading extends HTMLElement {
+      constructor() {
+        super()
+        const template = document
+        .getElementById('my-heading-template')
+        .content
+        const shadowRoot = this.attachShadow({mode: 'open'})
+          .appendChild(template.cloneNode(true))
+      }
+
+      connectedCallback() {
+        console.log('My Heading')
+      }
+    }
+    customElements.define('my-heading', MyHeading)
+  </script>
+</template>
+
+<my-heading>
+  <h1 slot="heading">
+    My default text
+  </h1>
+</my-heading>
+`)
+  t.equal(
+    strip(actual),
+    strip(expected),
+    'Oh thank goodness it works even without JavaScript enabled.'
+  )
+  t.end()
+})
+
+/*
+// Punt on this for now.
+// Users should be instructed to always use a root tag in a named slot.
+// In this case they should author with a span tag wrapping the text.
+test('should wrap text node in span tag with slot name', t=> {
   const actual = html`<my-paragraph></my-paragraph>`
   const expected = doc(`
 <template id="my-paragraph-template">
@@ -85,6 +133,7 @@ test.only('expand template', t=> {
   )
   t.end()
 })
+*/
 
 test('Passing state through multiple levels', t=> {
   const items = ['test']
@@ -123,6 +172,7 @@ test('fill named slot', t=> {
         console.log('My Paragraph')
       }
     }
+    customElements.define('my-paragraph', MyParagraph)
   </script>
 </template>
 <my-paragraph>
@@ -234,9 +284,9 @@ test('pass attribute array values correctly', t => {
   </script>
 </template>
 <my-list items="">
-  <slot name="title">
-    <h4>My list</h4>
-  </slot>
+  <h4 slot="title">
+    My list
+  </h4>
   <ul>
     <li>one</li>
     <li>two</li>
@@ -286,11 +336,9 @@ test('update deeply nested slots', t=> {
 </template>
   <my-content>
     <h2>My Content</h2>
-    <slot name="title">
-      <h3>
-        Title
-      </h3>
-    </slot>
+    <h3 slot="title">
+      Title
+    </h3>
     <my-content>
       <h2>My Content</h2>
       <h3 slot="title">Second</h3>

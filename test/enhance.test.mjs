@@ -2,11 +2,13 @@ import test from 'tape'
 import enhance from '../index.mjs'
 import MyContent from './fixtures/templates/my-content.mjs'
 import MyCounter from './fixtures/templates/my-counter.mjs'
+import MyDefaultContent from './fixtures/templates/my-default-content.mjs'
 import MyHeading from './fixtures/my-heading.mjs'
 import MyId from './fixtures/templates/my-id.mjs'
 import MyLink from './fixtures/templates/my-link.mjs'
 import MyListContainer from './fixtures/templates/my-list-container.mjs'
 import MyList from './fixtures/templates/my-list.mjs'
+import MyMultiples from './fixtures/templates/my-multiples.mjs'
 import MyPage from './fixtures/templates/my-page.mjs'
 import MyParagraph from './fixtures/templates/my-paragraph.mjs'
 import MyPrePage from './fixtures/templates/my-pre-page.mjs'
@@ -15,11 +17,13 @@ import MyStoreData from './fixtures/templates/my-store-data.mjs'
 const elements = {
   'my-content': MyContent,
   'my-counter': MyCounter,
+  'my-default-content': MyDefaultContent,
   'my-heading': MyHeading,
   'my-id': MyId,
   'my-link': MyLink,
   'my-list-container': MyListContainer,
   'my-list': MyList,
+  'my-multiples': MyMultiples,
   'my-page': MyPage,
   'my-paragraph': MyParagraph,
   'my-pre-page': MyPrePage,
@@ -51,6 +55,27 @@ test('return an html function', t => {
   t.end()
 })
 
+test('should render default content for unnamed slot', t => {
+  const actual = html`<my-default-content></my-default-content>`
+  const expected = doc(`
+<template id="my-default-content-template">
+  <div>
+    <slot>Default Content</slot>
+  </div>
+</template>
+<my-default-content>
+  <div>
+    Default Content
+  </div>
+</my-default-content>
+  `)
+  t.equal(
+    strip(actual),
+    strip(expected),
+    'Renders default content for unnamed slot'
+  )
+  t.end()
+})
 test('should render slot attribute to name attribute', t => {
   const actual = html`<my-heading></my-heading>`
   const expected = doc(`
@@ -93,10 +118,6 @@ test('should render slot attribute to name attribute', t => {
   t.end()
 })
 
-/*
-// Punt on this for now.
-// Users should be instructed to always use a root tag in a named slot.
-// In this case they should author with a span tag wrapping the text.
 test('should wrap text node in span tag with slot name', t=> {
   const actual = html`<my-paragraph></my-paragraph>`
   const expected = doc(`
@@ -129,11 +150,10 @@ test('should wrap text node in span tag with slot name', t=> {
   t.equal(
     strip(actual),
     strip(expected),
-    'by gum, i do believe that it does expand that template with slotted default content'
+    'Welp it wraps a text node in a span tag with slot name'
   )
   t.end()
 })
-*/
 
 test('Passing state through multiple levels', t=> {
   const items = ['test']
@@ -145,6 +165,35 @@ test('Passing state through multiple levels', t=> {
     strip(actual),
     strip(expected),
     'state makes it to the inner component render'
+  )
+  t.end()
+})
+
+test('should wrap children with no root node in a div tag with slot name', t=> {
+  const actual = html`<my-multiples></my-multiples>`
+  const expected = doc(`
+<template id="my-multiples-template">
+  <slot name="my-content">
+    My default text
+    <h3>A smaller heading</h3>
+    Random text
+    <code> a code block</code>
+  </slot>
+</template>
+
+<my-multiples>
+  <div slot="my-content">
+    My default text
+    <h3>A smaller heading</h3>
+    Random text
+    <code> a code block</code>
+  </div>
+</my-multiples>
+`)
+  t.equal(
+    strip(actual),
+    strip(expected),
+    'Whew it wraps a multiple slot children with no root node in a div tag with the slot name added'
   )
   t.end()
 })
@@ -215,8 +264,8 @@ test('add authored children to unnamed slot', t=> {
   </script>
 </template>
 <my-content>
-  <h2>My Content</h2>
   <h4 slot="title">Custom title</h4>
+  <h2>My Content</h2>
   <h1>YOLO</h1>
 </my-content>
 `)
@@ -313,6 +362,9 @@ test('update deeply nested slots', t=> {
       </my-content>
     </my-content>
   </my-content>`
+  console.log('==============================\n')
+  console.log(actual)
+  console.log('==============================\n')
   const expected = doc(`
 <template id="my-content-template">
   <h2>My Content</h2>
@@ -335,16 +387,16 @@ test('update deeply nested slots', t=> {
   </script>
 </template>
   <my-content>
-    <h2>My Content</h2>
     <h3 slot="title">
       Title
     </h3>
+    <h2>My Content</h2>
     <my-content>
-      <h2>My Content</h2>
       <h3 slot="title">Second</h3>
+      <h2>My Content</h2>
       <my-content>
-        <h2>My Content</h2>
         <h3 slot="title">Third</h3>
+        <h2>My Content</h2>
       </my-content>
     </my-content>
   </my-content>

@@ -3,7 +3,7 @@ export default function MyParagraph() {
 <p>
   <slot name="my-text">
     My default text
-  </slot>
+</slot>
 </p>
 <script type=module>
   class MyParagraph extends HTMLElement {

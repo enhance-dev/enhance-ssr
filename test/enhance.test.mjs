@@ -362,9 +362,6 @@ test('update deeply nested slots', t=> {
       </my-content>
     </my-content>
   </my-content>`
-  console.log('==============================\n')
-  console.log(actual)
-  console.log('==============================\n')
   const expected = doc(`
 <template id="my-content-template">
   <h2>My Content</h2>

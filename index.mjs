@@ -41,6 +41,7 @@ function processCustomElements(node, elements, store) {
         processedElements.push(child)
         const template = expandTemplate(child, elements, store)
         fillSlots(child, template)
+        replaceSlots(template)
         const nodeChildNodes = child.childNodes
         nodeChildNodes.splice(
           0,
@@ -57,7 +58,6 @@ function processCustomElements(node, elements, store) {
 
 function expandTemplate(node, elements, store) {
   const rendered = renderTemplate(node.tagName, elements, node.attrs, store)
-  if (!rendered) return
   const frag = fragment(rendered)
   for (const node of frag.childNodes) {
     if (node.nodeName === 'script') {
@@ -84,13 +84,13 @@ function attrsToState(attrs=[], obj={}) {
 }
 
 function fillSlots(node, template) {
+  const slots = findSlots(template)
+  const inserts = findInserts(node)
   if (!node.childNodes.length) {
-    const slotted = replaceSlots(template)
+    const slotted = replaceSlots(template, slots)
     node.childNodes.push(...slotted.childNodes)
     return
   }
-  const slots = findSlots(template)
-  const inserts = findInserts(node)
   const slotsLength = slots.length
   for (let i=0; i<slotsLength; i++) {
     let hasSlotName = false
@@ -180,8 +180,8 @@ function findInserts(node) {
   return elements
 }
 
-function replaceSlots(node) {
-  const slots = findSlots(node)
+function replaceSlots(node, slots) {
+  slots = slots || findSlots(node)
   slots.forEach(slot => {
     const value = slot.attrs.find(attr => attr.name === 'name')?.value
     const name = 'slot'
@@ -190,6 +190,7 @@ function replaceSlots(node) {
         return !n.nodeName.startsWith('#')
       }
     )
+    // If this is a named slot
     if (value) {
       if (!slotChildren.length) {
         // Only has text nodes

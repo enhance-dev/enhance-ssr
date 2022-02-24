@@ -1,4 +1,4 @@
-import { parse, fragment, serialize } from '@begin/parse5'
+import { parse, fragment, serialize, updateNodeSourceCodeLocation } from '@begin/parse5'
 import isCustomElement from './lib/is-custom-element.mjs'
 import { encode, decode } from './lib/transcode.mjs'
 
@@ -41,12 +41,6 @@ function processCustomElements(node, elements, store) {
         processedElements.push(child)
         const template = expandTemplate(child, elements, store)
         fillSlots(child, template)
-        const nodeChildNodes = child.childNodes
-        nodeChildNodes.splice(
-          0,
-          nodeChildNodes.length,
-          ...template.childNodes
-        )
       }
       if (child.childNodes) find(child)
     }
@@ -84,9 +78,8 @@ function attrsToState(attrs=[], obj={}) {
 function fillSlots(node, template) {
   const slots = findSlots(template)
   const inserts = findInserts(node)
-
-  const slotsLength = slots.length
-  for (let i=0; i<slotsLength; i++) {
+  const usedSlots = []
+  for (let i=0; i<slots.length; i++) {
     let hasSlotName = false
     const slot = slots[i]
     const slotAttrs = slot.attrs || []
@@ -97,7 +90,6 @@ function fillSlots(node, template) {
       if (attr.name === 'name') {
         hasSlotName = true
         const slotName = attr.value
-
         const insertsLength = inserts.length
         for (let i=0; i < insertsLength; i ++) {
           const insert = inserts[i]
@@ -116,6 +108,7 @@ function fillSlots(node, template) {
                 1,
                 insert
               )
+              usedSlots.push(slot)
             }
           }
         }
@@ -123,7 +116,10 @@ function fillSlots(node, template) {
     }
 
     if (!hasSlotName) {
-      const children = node.childNodes.filter(n => !inserts.includes(n))
+      // Remove default content from unnamed slots
+      slot.childNodes.length = 0
+      const children = node.childNodes
+        .filter(n => !inserts.includes(n))
       const slotParentChildNodes = slot.parentNode.childNodes
       slotParentChildNodes.splice(
         slotParentChildNodes
@@ -133,6 +129,15 @@ function fillSlots(node, template) {
       )
     }
   }
+
+  const unusedSlots = slots.filter(slot => !usedSlots.includes(slot))
+  replaceSlots(template, unusedSlots)
+  const nodeChildNodes = node.childNodes
+  nodeChildNodes.splice(
+    0,
+    nodeChildNodes.length,
+    ...template.childNodes
+  )
 }
 
 function findSlots(node) {
@@ -172,6 +177,60 @@ function findInserts(node) {
   }
   find(node)
   return elements
+}
+
+function replaceSlots(node, slots) {
+  slots.forEach(slot => {
+    const value = slot.attrs.find(attr => attr.name === 'name')?.value
+    const name = 'slot'
+    const slotChildren = slot.childNodes.filter(
+      n => {
+        return !n.nodeName.startsWith('#')
+      }
+    )
+    // If this is a named slot
+    if (value) {
+      if (!slotChildren.length) {
+        // Only has text nodes
+        const wrapperSpan = {
+          nodeName: 'span',
+          tagName: 'span',
+          attrs: [{ value, name }],
+          namespaceURI: 'http://www.w3.org/1999/xhtml',
+          childNodes: []
+        }
+
+        wrapperSpan.childNodes = wrapperSpan.childNodes.concat(slot.childNodes)
+        slot.childNodes.length = 0
+        slot.childNodes.push(wrapperSpan)
+      }
+      else if (slotChildren.length > 1) {
+         // Has multiple children
+         const wrapperDiv = {
+          nodeName: 'div',
+          tagName: 'div',
+          attrs: [{ value, name }],
+          namespaceURI: 'http://www.w3.org/1999/xhtml',
+          childNodes: []
+        }
+
+        wrapperDiv.childNodes = wrapperDiv.childNodes.concat(slot.childNodes)
+        slot.childNodes.length = 0
+        slot.childNodes.push(wrapperDiv)
+      }
+      else {
+        slotChildren[0].attrs.push({ value, name })
+      }
+    }
+    const slotParentChildNodes = slot.parentNode.childNodes
+    slotParentChildNodes.splice(
+      slotParentChildNodes
+        .indexOf(slot),
+      1,
+      ...slot.childNodes
+    )
+  })
+  return node
 }
 
 function template(name, path) {

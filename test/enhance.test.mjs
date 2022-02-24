@@ -6,11 +6,13 @@ import MyId from './fixtures/templates/my-id.mjs'
 import MyLink from './fixtures/templates/my-link.mjs'
 import MyListContainer from './fixtures/templates/my-list-container.mjs'
 import MyList from './fixtures/templates/my-list.mjs'
+import MyMultiples from './fixtures/templates/my-multiples.mjs'
 import MyPage from './fixtures/templates/my-page.mjs'
 import MyParagraph from './fixtures/templates/my-paragraph.mjs'
 import MyPrePage from './fixtures/templates/my-pre-page.mjs'
 import MyPre from './fixtures/templates/my-pre.mjs'
 import MyStoreData from './fixtures/templates/my-store-data.mjs'
+import MyUnnamed from './fixtures/templates/my-unnamed.mjs'
 const elements = {
   'my-content': MyContent,
   'my-counter': MyCounter,
@@ -18,11 +20,13 @@ const elements = {
   'my-link': MyLink,
   'my-list-container': MyListContainer,
   'my-list': MyList,
+  'my-multiples': MyMultiples,
   'my-page': MyPage,
   'my-paragraph': MyParagraph,
   'my-pre-page': MyPrePage,
   'my-pre': MyPre,
-  'my-store-data': MyStoreData
+  'my-store-data': MyStoreData,
+  'my-unnamed': MyUnnamed
 }
 
 const strip = str => str.replace(/\r?\n|\r|\s\s+/g, '')
@@ -49,7 +53,7 @@ test('return an html function', t => {
   t.end()
 })
 
-test('expand template', t=> {
+test('expand template', t => {
   const actual = html`<my-paragraph></my-paragraph>`
   const expected = doc(`
 <template id="my-paragraph-template">
@@ -72,7 +76,7 @@ test('expand template', t=> {
 </template>
 
 <my-paragraph>
-  <p><slot name="my-text">My default text</slot></p>
+  <p><span slot="my-text">My default text</span></p>
 </my-paragraph>
 `)
   t.equal(
@@ -93,6 +97,34 @@ test('Passing state through multiple levels', t=> {
     strip(actual),
     strip(expected),
     'state makes it to the inner component render'
+  )
+  t.end()
+})
+
+test('should wrap children with no root node in a div tag with slot name', t=> {
+  const actual = html`<my-multiples></my-multiples>`
+  const expected = doc(`
+<template id="my-multiples-template">
+  <slot name="my-content">
+    My default text
+    <h3>A smaller heading</h3>
+    Random text
+    <code> a code block</code>
+  </slot>
+</template>
+<my-multiples>
+  <div slot="my-content">
+    My default text
+    <h3>A smaller heading</h3>
+    Random text
+    <code> a code block</code>
+  </div>
+</my-multiples>
+`)
+  t.equal(
+    strip(actual),
+    strip(expected),
+    'Whew it wraps a multiple slot children with no root node in a div tag with the slot name added'
   )
   t.end()
 })
@@ -130,6 +162,22 @@ test('fill named slot', t=> {
     strip(actual),
     strip(expected),
     'fills that named slot alright'
+  )
+  t.end()
+})
+
+test('should not render default content in unnamed slots', t=> {
+  const actual = html`<my-unnamed></my-unnamed>`
+  const expected = doc(`
+<template id="my-unnamed-template">
+  <slot>This should not render</slot>
+</template>
+<my-unnamed></my-unnamed>
+`)
+  t.equal(
+    strip(actual),
+    strip(expected),
+    'does not render default content in unnamed slots'
   )
   t.end()
 })
@@ -231,9 +279,7 @@ test('pass attribute array values correctly', t => {
   </script>
 </template>
 <my-list items="">
-  <slot name="title">
-    <h4>My list</h4>
-  </slot>
+  <h4 slot="title">My list</h4>
   <ul>
     <li>one</li>
     <li>two</li>
@@ -283,11 +329,9 @@ test('update deeply nested slots', t=> {
 </template>
   <my-content>
     <h2>My Content</h2>
-    <slot name="title">
-      <h3>
-        Title
-      </h3>
-    </slot>
+    <h3 slot="title">
+      Title
+    </h3>
     <my-content>
       <h2>My Content</h2>
       <h3 slot="title">Second</h3>

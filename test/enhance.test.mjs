@@ -166,18 +166,20 @@ test('fill named slot', t=> {
   t.end()
 })
 
-test('should not render default content in unnamed slots', t=> {
+test('should render default content in unnamed slots', t=> {
   const actual = html`<my-unnamed></my-unnamed>`
   const expected = doc(`
 <template id="my-unnamed-template">
-  <slot>This should not render</slot>
+  <slot>This should render</slot>
 </template>
-<my-unnamed></my-unnamed>
+<my-unnamed>
+  This should render
+</my-unnamed>
 `)
   t.equal(
     strip(actual),
     strip(expected),
-    'does not render default content in unnamed slots'
+    'renders default content in unnamed slots'
   )
   t.end()
 })
@@ -424,14 +426,18 @@ test('fill nested rendered slots', t=> {
 test('should allow supplying custom head tag', t=> {
   const actual = html`
     <head>
+      <meta charset="utf-8">
       <title>Yolo!</title>
+      <link rel="stylesheet" href="/style.css">
     </head>
     <my-counter count="3"></my-counter>
     `
   const expected = `
 <html>
 <head>
+  <meta charset="utf-8">
   <title>Yolo!</title>
+  <link rel="stylesheet" href="/style.css">
 </head>
 <body>
 <template id="my-counter-template">

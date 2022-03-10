@@ -15,7 +15,7 @@ export default function Enhancer(options={}) {
     const body = html.childNodes.find(node => node.tagName === 'body')
     const customElements = processCustomElements(body, elements, store)
     const moduleNames = [...new Set(customElements.map(node =>  node.tagName))]
-    const templates = fragment(moduleNames.map(name => template(name, elements)).join(''))
+    const templates = fragment(moduleNames.map(name => template({ name, elements, store })).join(''))
     addTemplateTags(body, templates)
     addScriptStripper(body)
     return serialize(doc).replace(/__b_\d+/g, '')
@@ -50,7 +50,7 @@ function processCustomElements(node, elements, store) {
 }
 
 function expandTemplate(node, elements, store) {
-  const frag = fragment(renderTemplate(node.tagName, elements, node.attrs, store) || '')
+  const frag = fragment(renderTemplate({ name: node.tagName, elements, attrs: node.attrs, store }) || '')
   for (const node of frag.childNodes) {
     if (node.nodeName === 'script') {
       frag.childNodes.splice(frag.childNodes.indexOf(node), 1)
@@ -59,14 +59,14 @@ function expandTemplate(node, elements, store) {
   return frag
 }
 
-function renderTemplate(tagName, elements, attrs=[], store={}) {
+function renderTemplate({ name, elements, attrs=[], store={} }) {
   attrs = attrs ? attrsToState(attrs) : {}
   const state = { attrs, store }
   try {
-    return elements[tagName]({ html:render, state })
+    return elements[name]({ html: render, state })
   }
   catch(err) {
-    throw new Error(`Issue rendering template for ${tagName}.\n${err.message}`)
+    throw new Error(`Issue rendering template for ${name}.\n${err.message}`)
   }
 }
 
@@ -116,8 +116,6 @@ function fillSlots(node, template) {
     }
 
     if (!hasSlotName) {
-      // Remove default content from unnamed slots
-      slot.childNodes.length = 0
       const children = node.childNodes
         .filter(n => !inserts.includes(n))
       const slotParentChildNodes = slot.parentNode.childNodes
@@ -233,10 +231,10 @@ function replaceSlots(node, slots) {
   return node
 }
 
-function template(name, path) {
+function template({ name, elements, store }) {
   return `
 <template id="${name}-template">
-  ${renderTemplate(name, path)}
+  ${renderTemplate({ name, elements, store })}
 </template>
   `
 }

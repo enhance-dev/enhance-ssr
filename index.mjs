@@ -1,4 +1,4 @@
-import { parse, fragment, serialize, updateNodeSourceCodeLocation } from '@begin/parse5'
+import { parse, fragment, serialize } from '@begin/parse5'
 import isCustomElement from './lib/is-custom-element.mjs'
 import { encode, decode } from './lib/transcode.mjs'
 

@@ -5,7 +5,7 @@ import { encode, decode } from './lib/transcode.mjs'
 export default function Enhancer(options={}) {
   const {
     initialState={},
-    elements
+    elements=[]
   } = options
   const store = Object.assign({}, initialState)
 
@@ -13,9 +13,12 @@ export default function Enhancer(options={}) {
     const doc = parse(render(strings, ...values))
     const html = doc.childNodes.find(node => node.tagName === 'html')
     const body = html.childNodes.find(node => node.tagName === 'body')
-    const customElements = processCustomElements(body, elements, store)
-    const moduleNames = [...new Set(customElements.map(node =>  node.tagName))]
-    const templates = fragment(moduleNames.map(name => template({ name, elements, store })).join(''))
+    processCustomElements(body, elements, store)
+    const templates = fragment(
+      Object.keys(elements)
+        .map(name => template({ name, elements, store }))
+          .join('')
+    )
     addTemplateTags(body, templates)
     addScriptStripper(body)
     return serialize(doc).replace(/__b_\d+/g, '')

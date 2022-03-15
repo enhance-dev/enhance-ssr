@@ -2,41 +2,20 @@ import test from 'tape'
 import enhance from '../index.mjs'
 import MyContent from './fixtures/templates/my-content.mjs'
 import MyCounter from './fixtures/templates/my-counter.mjs'
-import MyId from './fixtures/templates/my-id.mjs'
 import MyLink from './fixtures/templates/my-link.mjs'
 import MyListContainer from './fixtures/templates/my-list-container.mjs'
 import MyList from './fixtures/templates/my-list.mjs'
 import MyMultiples from './fixtures/templates/my-multiples.mjs'
-import MyPage from './fixtures/templates/my-page.mjs'
 import MyParagraph from './fixtures/templates/my-paragraph.mjs'
 import MyPrePage from './fixtures/templates/my-pre-page.mjs'
 import MyPre from './fixtures/templates/my-pre.mjs'
 import MyStoreData from './fixtures/templates/my-store-data.mjs'
 import MyUnnamed from './fixtures/templates/my-unnamed.mjs'
-const elements = {
-  'my-content': MyContent,
-  'my-counter': MyCounter,
-  'my-id': MyId,
-  'my-link': MyLink,
-  'my-list-container': MyListContainer,
-  'my-list': MyList,
-  'my-multiples': MyMultiples,
-  'my-page': MyPage,
-  'my-paragraph': MyParagraph,
-  'my-pre-page': MyPrePage,
-  'my-pre': MyPre,
-  'my-store-data': MyStoreData,
-  'my-unnamed': MyUnnamed
-}
 
 const strip = str => str.replace(/\r?\n|\r|\s\s+/g, '')
 function doc(string) {
   return `<html><head></head><body>${string}<script>Array.from(document.getElementsByTagName("template")).forEach(t => t.content.lastElementChild && 'SCRIPT' === t.content.lastElementChild.nodeName?document.body.appendChild(t.content.lastElementChild):'')</script></body></html>`
 }
-
-const html = enhance({
-  elements
-})
 
 test('Enhance should', t => {
   t.ok(true, 'it really should')
@@ -49,11 +28,17 @@ test('exist', t => {
 })
 
 test('return an html function', t => {
+  const html = enhance()
   t.ok(html, 'ah yes, this might come in handy')
   t.end()
 })
 
 test('expand template', t => {
+  const html = enhance({
+    elements: {
+      'my-paragraph': MyParagraph
+    }
+  })
   const actual = html`<my-paragraph></my-paragraph>`
   const expected = doc(`
 <template id="my-paragraph-template">
@@ -88,10 +73,24 @@ test('expand template', t => {
 })
 
 test('Passing state through multiple levels', t=> {
+  const html = enhance({
+    elements: {
+      'my-pre-page': MyPrePage,
+      'my-pre': MyPre
+    }
+  })
   const items = ['test']
   const actual = html`<my-pre-page items="${items}"></my-pre-page>`
   const expected = doc(`
-  <template id="my-pre-page-template"><my-pre items=""></my-pre></template><template id="my-pre-template"><pre></pre></template><my-pre-page items=""><my-pre items=""><pre>test</pre></my-pre></my-pre-page>
+  <template id="my-pre-page-template">
+    <my-pre items=""></my-pre>
+  </template>
+  <template id="my-pre-template">
+    <pre></pre>
+  </template>
+  <my-pre-page items=""><my-pre items="">
+  <pre>test</pre>
+  </my-pre></my-pre-page>
 `)
   t.equal(
     strip(actual),
@@ -102,6 +101,11 @@ test('Passing state through multiple levels', t=> {
 })
 
 test('should wrap children with no root node in a div tag with slot name', t=> {
+  const html = enhance({
+    elements: {
+      'my-multiples': MyMultiples
+    }
+  })
   const actual = html`<my-multiples></my-multiples>`
   const expected = doc(`
 <template id="my-multiples-template">
@@ -130,6 +134,11 @@ test('should wrap children with no root node in a div tag with slot name', t=> {
 })
 
 test('fill named slot', t=> {
+  const html = enhance({
+    elements: {
+      'my-paragraph': MyParagraph
+    }
+  })
   const actual = html`
 <my-paragraph>
   <span slot="my-text">Slotted</span>
@@ -167,6 +176,11 @@ test('fill named slot', t=> {
 })
 
 test('should render default content in unnamed slots', t=> {
+  const html = enhance({
+    elements: {
+      'my-unnamed': MyUnnamed
+    }
+  })
   const actual = html`<my-unnamed></my-unnamed>`
   const expected = doc(`
 <template id="my-unnamed-template">
@@ -185,6 +199,11 @@ test('should render default content in unnamed slots', t=> {
 })
 
 test('add authored children to unnamed slot', t=> {
+  const html = enhance({
+    elements: {
+      'my-content': MyContent
+    }
+  })
   const actual = html`
   <my-content>
     <h1>YOLO</h1>
@@ -226,6 +245,11 @@ test('add authored children to unnamed slot', t=> {
 })
 
 test('pass attributes as state', t=> {
+  const html = enhance({
+    elements: {
+      'my-link': MyLink
+    }
+  })
   const actual = html`
 <my-link href='/yolo' text='sketchy'></my-link>
 `
@@ -257,6 +281,11 @@ test('pass attributes as state', t=> {
 })
 
 test('pass attribute array values correctly', t => {
+  const html = enhance({
+    elements: {
+      'my-list': MyList
+    }
+  })
   const things = [{ title: 'one' },{ title: 'two' },{ title: 'three' }]
   const actual = html`
 <my-list items="${things}"></my-list>
@@ -299,6 +328,11 @@ test('pass attribute array values correctly', t => {
 
 
 test('update deeply nested slots', t=> {
+  const html = enhance({
+    elements: {
+      'my-content': MyContent
+    }
+  })
   const actual = html`
   <my-content>
     <my-content>
@@ -353,6 +387,12 @@ test('update deeply nested slots', t=> {
 })
 
 test('fill nested rendered slots', t=> {
+  const html = enhance({
+    elements: {
+      'my-list-container': MyListContainer,
+      'my-list': MyList
+    }
+  })
   const items = [{ title: 'one' },{ title: 'two' },{ title: 'three' }]
   const actual = html`
 <my-list-container items="${items}">
@@ -424,6 +464,11 @@ test('fill nested rendered slots', t=> {
 })
 
 test('should allow supplying custom head tag', t=> {
+  const html = enhance({
+    elements: {
+      'my-counter': MyCounter
+    }
+  })
   const actual = html`
     <head>
       <meta charset="utf-8">
@@ -481,7 +526,9 @@ test('should pass store to template', t => {
     ]
   }
   const html = enhance({
-    elements,
+    elements: {
+      'my-store-data': MyStoreData
+    },
     initialState
   })
   const actual = html`<my-store-data app-index="0" user-index="1"></my-store-data>`

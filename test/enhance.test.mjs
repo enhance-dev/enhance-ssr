@@ -83,12 +83,6 @@ test('Passing state through multiple levels', t=> {
   const items = ['test']
   const actual = html`<my-pre-page items="${items}"></my-pre-page>`
   const expected = doc(`
-  <template id="my-pre-page-template">
-    <my-pre items=""></my-pre>
-  </template>
-  <template id="my-pre-template">
-    <pre></pre>
-  </template>
   <my-pre-page items=""><my-pre items="">
   <pre>test</pre>
   </my-pre></my-pre-page>
@@ -109,14 +103,6 @@ test('should wrap children with no root node in a div tag with slot name', t=> {
   })
   const actual = html`<my-multiples></my-multiples>`
   const expected = doc(`
-<template id="my-multiples-template">
-  <slot name="my-content">
-    My default text
-    <h3>A smaller heading</h3>
-    Random text
-    <code> a code block</code>
-  </slot>
-</template>
 <my-multiples>
   <div slot="my-content">
     My default text
@@ -184,9 +170,6 @@ test('should not render default content in unnamed slots', t=> {
   })
   const actual = html`<my-unnamed></my-unnamed>`
   const expected = doc(`
-<template id="my-unnamed-template">
-  <slot>This should not render</slot>
-</template>
 <my-unnamed></my-unnamed>
 `)
   t.equal(
@@ -484,9 +467,6 @@ test('should allow supplying custom head tag', t=> {
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-<template id="my-counter-template">
-<h3>Count: 0</h3>
-</template>
 <my-counter count="3"><h3>Count: 3</h3></my-counter>
 <script>Array.from(document.getElementsByTagName("template")).forEach(t => t.content.lastElementChild && 'SCRIPT' === t.content.lastElementChild.nodeName?document.body.appendChild(t.content.lastElementChild):'')</script>
 </body>
@@ -532,12 +512,6 @@ test('should pass store to template', t => {
   })
   const actual = html`<my-store-data app-index="0" user-index="1"></my-store-data>`
   const expected = doc(`
-<template id="my-store-data-template">
-  <div>
-    <h1></h1>
-    <h1></h1>
-  </div>
-</template>
 <my-store-data app-index="0" user-index="1">
   <div>
     <h1>kim</h1>

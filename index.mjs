@@ -283,15 +283,20 @@ function template({ name, elements, store, scriptTransforms, styleTransforms }) 
   const script = parsed.childNodes.find(n => n.nodeName === 'script')
   const style = parsed.childNodes.filter(n => n.nodeName === 'style')
 
-  if (script && scriptTransforms.length) {
-    const scriptNode = applyScriptTransforms({ node: script, scriptTransforms })
-    script.childNodes[0].value = scriptNode.childNodes[0].value
+  if (script) {
+    if (scriptTransforms.length) {
+      const scriptNode = applyScriptTransforms({ node: script, scriptTransforms })
+      script.childNodes[0].value = scriptNode.childNodes[0].value
+    }
+  }
+  else {
+    return ''
   }
 
   if (style.length && styleTransforms.length) {
     const styleNodes = applyStyleTransforms({ nodes: style, styleTransforms })
     style.forEach((s, i) => {
-        s.childNodes[0].value = styleNodes[i].childNodes[0].value
+      s.childNodes[0].value = styleNodes[i].childNodes[0].value
     })
   }
 

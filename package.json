@@ -14,10 +14,12 @@
   "author": "kj <kj@begin.com>",
   "license": "Apache-2.0",
   "devDependencies": {
-    "tap-arc": "^0.1.2",
+    "tap-arc": "^0.3.4",
     "tape-es": "^1.2.17"
   },
   "dependencies": {
-    "@begin/parse5": "^0.0.2"
+    "@begin/parse5": "^0.0.2",
+    "acorn": "^8.7.0",
+    "escodegen": "^2.0.0"
   }
 }

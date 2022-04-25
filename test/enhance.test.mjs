@@ -11,6 +11,7 @@ import MyPrePage from './fixtures/templates/my-pre-page.mjs'
 import MyPre from './fixtures/templates/my-pre.mjs'
 import MyStoreData from './fixtures/templates/my-store-data.mjs'
 import MyUnnamed from './fixtures/templates/my-unnamed.mjs'
+import MyTransformScript from './fixtures/templates/my-transform-script.mjs'
 
 const strip = str => str.replace(/\r?\n|\r|\s\s+/g, '')
 function doc(string) {
@@ -175,7 +176,7 @@ test('fill named slot', t=> {
   t.end()
 })
 
-test('should render default content in unnamed slots', t=> {
+test('should not render default content in unnamed slots', t=> {
   const html = enhance({
     elements: {
       'my-unnamed': MyUnnamed
@@ -184,16 +185,14 @@ test('should render default content in unnamed slots', t=> {
   const actual = html`<my-unnamed></my-unnamed>`
   const expected = doc(`
 <template id="my-unnamed-template">
-  <slot>This should render</slot>
+  <slot>This should not render</slot>
 </template>
-<my-unnamed>
-  This should render
-</my-unnamed>
+<my-unnamed></my-unnamed>
 `)
   t.equal(
     strip(actual),
     strip(expected),
-    'renders default content in unnamed slots'
+    'Does not render default content in unnamed slots'
   )
   t.end()
 })
@@ -547,5 +546,79 @@ test('should pass store to template', t => {
 </my-store-data>
   `)
   t.equal(strip(actual), strip(expected), 'Should render store data')
+  t.end()
+})
+
+test('should run script transforms', t => {
+  const html = enhance({
+    elements: {
+      'my-transform-script': MyTransformScript
+    },
+    scriptTransforms: [
+      function({ attrs, raw }) {
+        return raw + '\n yolo'
+      }
+    ]
+  })
+  const actual = html`<my-transform-script></my-transform-script>`
+  const expected = doc(`
+<template id="my-transform-script-template">
+<style>
+  :host {
+    display: block;
+  }
+</style>
+<h1>My Transform Script</h1>
+<script type="module">
+  class MyTransformScript extends HTMLElement {
+    constructor() {
+      super()
+    }
+  }
+  customElements.define('my-transform-script', MyTransformScript) yolo
+</script>
+</template>
+<my-transform-script>
+  <h1>My Transform Script</h1>
+</my-transform-script>
+  `)
+  t.equal(strip(actual), strip(expected), 'ran script transform script')
+  t.end()
+})
+
+test('should run style transforms', t => {
+  const html = enhance({
+    elements: {
+      'my-transform-script': MyTransformScript
+    },
+    styleTransforms: [
+      function({ attrs, raw }) {
+        return raw + '\n yolo'
+      }
+    ]
+  })
+  const actual = html`<my-transform-script></my-transform-script>`
+  const expected = doc(`
+<template id="my-transform-script-template">
+<style>
+  :host {
+    display: block;
+  } yolo
+</style>
+<h1>My Transform Script</h1>
+<script type="module">
+  class MyTransformScript extends HTMLElement {
+    constructor() {
+      super()
+    }
+  }
+  customElements.define('my-transform-script', MyTransformScript)
+</script>
+</template>
+<my-transform-script>
+  <h1>My Transform Script</h1>
+</my-transform-script>
+  `)
+  t.equal(strip(actual), strip(expected), 'ran style transform script')
   t.end()
 })

@@ -1,5 +1,5 @@
-export default function MyParagraph() {
-  return `
+export default function MyParagraph({ html }) {
+  return html`
 <p>
   <slot name="my-text">
     My default text

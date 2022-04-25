@@ -5,7 +5,9 @@ import { encode, decode } from './lib/transcode.mjs'
 export default function Enhancer(options={}) {
   const {
     initialState={},
-    elements=[]
+    elements=[],
+    scriptTransforms=[],
+    styleTransforms=[],
   } = options
   const store = Object.assign({}, initialState)
 
@@ -16,7 +18,13 @@ export default function Enhancer(options={}) {
     processCustomElements(body, elements, store)
     const templates = fragment(
       Object.keys(elements)
-        .map(name => template({ name, elements, store }))
+        .map(name => template({
+          name,
+          elements,
+          store,
+          scriptTransforms,
+          styleTransforms
+        }))
           .join('')
     )
     addTemplateTags(body, templates)
@@ -31,10 +39,8 @@ function render(strings, ...values) {
     collect.push(strings[i], encode(values[i]))
   }
   collect.push(strings[strings.length - 1])
-
   return collect.join('')
 }
-
 
 function processCustomElements(node, elements, store) {
   const processedElements = []
@@ -52,10 +58,19 @@ function processCustomElements(node, elements, store) {
   return processedElements
 }
 
+
 function expandTemplate(node, elements, store) {
-  const frag = fragment(renderTemplate({ name: node.tagName, elements, attrs: node.attrs, store }) || '')
+  const frag = fragment(renderTemplate({
+    name: node.tagName,
+    elements,
+    attrs: node.attrs,
+    store
+  }) || '')
   for (const node of frag.childNodes) {
     if (node.nodeName === 'script') {
+      frag.childNodes.splice(frag.childNodes.indexOf(node), 1)
+    }
+    if (node.nodeName === 'style') {
       frag.childNodes.splice(frag.childNodes.indexOf(node), 1)
     }
   }
@@ -66,7 +81,8 @@ function renderTemplate({ name, elements, attrs=[], store={} }) {
   attrs = attrs ? attrsToState(attrs) : {}
   const state = { attrs, store }
   try {
-    return elements[name]({ html: render, state })
+    const output = elements[name]({ html: render, state })
+    return output
   }
   catch(err) {
     throw new Error(`Issue rendering template for ${name}.\n${err.message}`)
@@ -119,6 +135,7 @@ function fillSlots(node, template) {
     }
 
     if (!hasSlotName) {
+      slot.childNodes.length = 0
       const children = node.childNodes
         .filter(n => !inserts.includes(n))
       const slotParentChildNodes = slot.parentNode.childNodes
@@ -171,7 +188,7 @@ function findInserts(node) {
         }
       }
       if (!isCustomElement(child.tagName) &&
-        child.childNodes) {
+          child.childNodes) {
         find(child)
       }
     }
@@ -234,10 +251,53 @@ function replaceSlots(node, slots) {
   return node
 }
 
-function template({ name, elements, store }) {
+function applyScriptTransforms({ node, scriptTransforms }) {
+  const attrs = node.attrs || []
+  const raw = node.childNodes[0].value
+  let out = raw
+  scriptTransforms.forEach(transform => {
+    out = transform({ attrs, raw: out })
+  })
+  if (!out.length) return
+  node.childNodes[0].value = out
+  return node
+}
+
+function applyStyleTransforms({ nodes, styleTransforms }) {
+  nodes.forEach(node => {
+    const attrs = node.attrs || []
+    const raw = node.childNodes[0].value
+    let out = raw
+    styleTransforms.forEach(transform => {
+      out = transform({ attrs, raw: out })
+    })
+    if (!out.length) return
+    node.childNodes[0].value = out
+  })
+  return nodes
+}
+
+function template({ name, elements, store, scriptTransforms, styleTransforms }) {
+  const rendered = renderTemplate({ name, elements, store })
+  const parsed = fragment(rendered)
+  const script = parsed.childNodes.find(n => n.nodeName === 'script')
+  const style = parsed.childNodes.filter(n => n.nodeName === 'style')
+
+  if (script && scriptTransforms.length) {
+    const scriptNode = applyScriptTransforms({ node: script, scriptTransforms })
+    script.childNodes[0].value = scriptNode.childNodes[0].value
+  }
+
+  if (style.length && styleTransforms.length) {
+    const styleNodes = applyStyleTransforms({ nodes: style, styleTransforms })
+    style.forEach((s, i) => {
+        s.childNodes[0].value = styleNodes[i].childNodes[0].value
+    })
+  }
+
   return `
 <template id="${name}-template">
-  ${renderTemplate({ name, elements, store })}
+  ${serialize(parsed)}
 </template>
   `
 }

@@ -1,6 +1,6 @@
 export default function MyTransformScript({ html }) {
   return html`
-<style>
+<style scope="component">
   :host {
     display: block;
   }

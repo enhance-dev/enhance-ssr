@@ -120,7 +120,7 @@ Store is used to pass previously stored data, in an easy to access way, to all c
 ### Slots
 Enhance supports the use of [`slots` in your custom element templates](https://developer.mozilla.org/en-US/docs/Web/Web_Components/Using_templates_and_slots).
 ```javascript
-export default function MyCustomElement({ html }) {
+export default function MyParagraph({ html }) {
   return html`
 <p>
   <slot name="my-text">
@@ -135,6 +135,77 @@ You can override the default text by adding a slot attribute with a value that m
 <my-paragraph>
   <span slot="my-text">Let's have some different text!</span>
 </my-paragraph>
+```
+
+#### Unnamed slots
+Enhance supports unnamed slots for when you want to create a container element that will exposes it's content from the Shadow DOM.
+```javascript
+export default function MyParagraph({ html }) {
+  return html`
+<p>
+  <slot>This will not render.</slot>
+</p>
+  `
+}
+```
+
+```html
+<my-paragraph>
+  This will render <strong>all</strong> authored children.
+</my-paragraph>
+```
+
+
+### Transforms
+Enhance supports the inclusion of script and style transform functions. You add a function to the array of `scriptTransforms` and/or `styleTransforms` and are able to transform the contents however you wish, just return the your desired output.
+
+```javaScript
+import enhance from '@enhance/ssr'
+
+const html = enhance({
+  elements: {
+    'my-transform-script': MyTransformScript
+  },
+  scriptTransforms: [
+    function({ attrs, raw }) {
+      // raw is the raw text from inside the script tag
+      // attrs are the attributes from the script tag
+      return raw + ' yolo'
+    }
+  ],
+  styleTransforms: [
+    function({ attrs, raw }) {
+      // raw is the raw text from inside the style tag
+      // attrs are the attributes from the style tag
+      const { scope } = attrs
+      return `
+      /* Scope: ${ scope } */
+      ${ raw }
+      `
+    }
+  ]
+})
+
+function MyTransformScript({ html }) {
+  return html`
+<style scope="component">
+  :host {
+    display: block;
+  }
+</style>
+<h1>My Transform Script</h1>
+<script type=module>
+  class MyTransformScript extends HTMLElement {
+    constructor() {
+      super()
+    }
+  }
+  customElements.define('my-transform-script', MyTransformScript)
+</script>
+  `
+}
+
+console.log(html`<my-transform-script></my-transform-script>`)
 ```
 
 > ⚠️ Enhance renders one line of JavaScript into the page for extracting script tags from your templates.

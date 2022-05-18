@@ -1,6 +1,10 @@
 import { parse, fragment, serialize } from '@begin/parse5'
 import isCustomElement from './lib/is-custom-element.mjs'
 import { encode, decode } from './lib/transcode.mjs'
+let count = 0
+function getID() {
+  return `_${count++}`.toString(16)
+}
 
 export default function Enhancer(options={}) {
   const {
@@ -49,6 +53,20 @@ function processCustomElements(node, elements, store) {
   const find = (node) => {
     for (const child of node.childNodes) {
       if (isCustomElement(child.tagName)) {
+        const slotChildren = child.childNodes.filter(
+          n => n.attrs?.find(a => a.name === 'slot')
+            ? n
+            : null
+        )
+        if (slotChildren.length) {
+          const id = child.attrs.find(attr => attr.name === 'id')?.value
+          if(!id) {
+            child.attrs.push({ name: 'id', value: getID() })
+          }
+          slots.forEach(
+            node => authoredContentTemplates.push(template({ name: id })).childNodes = slots)
+          )
+        }
         usedElements.push(child.tagName)
         const template = expandTemplate(child, elements, store)
         fillSlots(child, template)
@@ -278,6 +296,10 @@ function applyStyleTransforms({ nodes, styleTransforms }) {
     node.childNodes[0].value = out
   })
   return nodes
+}
+
+function applyTransforms() {
+
 }
 
 function template({ name, elements, store, scriptTransforms, styleTransforms }) {

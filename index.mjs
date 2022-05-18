@@ -256,7 +256,7 @@ function applyScriptTransforms({ node, scriptTransforms }) {
   const raw = node.childNodes[0].value
   let out = raw
   scriptTransforms.forEach(transform => {
-    out = transform({ attrs, raw: out })
+    out = transform({ attrs, raw: out, tagName: node.tagName })
   })
   if (!out.length) return
   node.childNodes[0].value = out
@@ -269,7 +269,7 @@ function applyStyleTransforms({ nodes, styleTransforms }) {
     const raw = node.childNodes[0].value
     let out = raw
     styleTransforms.forEach(transform => {
-      out = transform({ attrs, raw: out })
+      out = transform({ attrs, raw: out, tagName: node.tagName })
     })
     if (!out.length) return
     node.childNodes[0].value = out

@@ -34,7 +34,7 @@ test('return an html function', t => {
   t.end()
 })
 
-test('expand template', t => {
+test.only('expand template', t => {
   const html = enhance({
     elements: {
       'my-paragraph': MyParagraph

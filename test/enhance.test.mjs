@@ -34,7 +34,7 @@ test('return an html function', t => {
   t.end()
 })
 
-test.only('expand template', t => {
+test('expand template', t => {
   const html = enhance({
     elements: {
       'my-paragraph': MyParagraph
@@ -42,6 +42,9 @@ test.only('expand template', t => {
   })
   const actual = html`<my-paragraph></my-paragraph>`
   const expected = doc(`
+<my-paragraph>
+  <p><span slot="my-text">My default text</span></p>
+</my-paragraph>
 <template id="my-paragraph-template">
   <p>
     <slot name="my-text">
@@ -61,9 +64,6 @@ test.only('expand template', t => {
   </script>
 </template>
 
-<my-paragraph>
-  <p><span slot="my-text">My default text</span></p>
-</my-paragraph>
 `)
   t.equal(
     strip(actual),
@@ -83,15 +83,15 @@ test('Passing state through multiple levels', t=> {
   const items = ['test']
   const actual = html`<my-pre-page items="${items}"></my-pre-page>`
   const expected = doc(`
+  <my-pre-page items=""><my-pre items="">
+  <pre>test</pre>
+  </my-pre></my-pre-page>
   <template id="my-pre-page-template">
     <my-pre items=""></my-pre>
   </template>
   <template id="my-pre-template">
     <pre></pre>
   </template>
-  <my-pre-page items=""><my-pre items="">
-  <pre>test</pre>
-  </my-pre></my-pre-page>
 `)
   t.equal(
     strip(actual),
@@ -109,14 +109,6 @@ test('should wrap children with no root node in a div tag with slot name', t=> {
   })
   const actual = html`<my-multiples></my-multiples>`
   const expected = doc(`
-<template id="my-multiples-template">
-  <slot name="my-content">
-    My default text
-    <h3>A smaller heading</h3>
-    Random text
-    <code> a code block</code>
-  </slot>
-</template>
 <my-multiples>
   <div slot="my-content">
     My default text
@@ -125,6 +117,14 @@ test('should wrap children with no root node in a div tag with slot name', t=> {
     <code> a code block</code>
   </div>
 </my-multiples>
+<template id="my-multiples-template">
+  <slot name="my-content">
+    My default text
+    <h3>A smaller heading</h3>
+    Random text
+    <code> a code block</code>
+  </slot>
+</template>
 `)
   t.equal(
     strip(actual),
@@ -146,6 +146,9 @@ test('fill named slot', t=> {
 </my-paragraph>
   `
   const expected = doc(`
+<my-paragraph>
+  <p><span slot="my-text">Slotted</span></p>
+</my-paragraph>
 <template id="my-paragraph-template">
   <p>
     <slot name="my-text">
@@ -164,9 +167,6 @@ test('fill named slot', t=> {
     }
   </script>
 </template>
-<my-paragraph>
-  <p><span slot="my-text">Slotted</span></p>
-</my-paragraph>
 `)
   t.equal(
     strip(actual),
@@ -184,10 +184,10 @@ test('should not render default content in unnamed slots', t=> {
   })
   const actual = html`<my-unnamed></my-unnamed>`
   const expected = doc(`
+<my-unnamed></my-unnamed>
 <template id="my-unnamed-template">
   <slot>This should not render</slot>
 </template>
-<my-unnamed></my-unnamed>
 `)
   t.equal(
     strip(actual),
@@ -209,6 +209,11 @@ test('add authored children to unnamed slot', t=> {
     <h4 slot=title>Custom title</h4>
   </my-content>`
   const expected = doc(`
+<my-content>
+  <h2>My Content</h2>
+  <h4 slot="title">Custom title</h4>
+  <h1>YOLO</h1>
+</my-content>
 <template id="my-content-template">
   <h2>My Content</h2>
   <slot name="title">
@@ -229,11 +234,6 @@ test('add authored children to unnamed slot', t=> {
     }
   </script>
 </template>
-<my-content>
-  <h2>My Content</h2>
-  <h4 slot="title">Custom title</h4>
-  <h1>YOLO</h1>
-</my-content>
 `)
   t.equal(
     strip(actual),
@@ -253,6 +253,9 @@ test('pass attributes as state', t=> {
 <my-link href='/yolo' text='sketchy'></my-link>
 `
   const expected = doc(`
+<my-link href="/yolo" text="sketchy">
+  <a href="/yolo">sketchy</a>
+</my-link>
 <template id="my-link-template">
   <a href=""></a>
   <script type="module">
@@ -267,9 +270,6 @@ test('pass attributes as state', t=> {
     }
   </script>
 </template>
-<my-link href="/yolo" text="sketchy">
-  <a href="/yolo">sketchy</a>
-</my-link>
 `)
   t.equal(
     strip(actual),
@@ -290,6 +290,14 @@ test('pass attribute array values correctly', t => {
 <my-list items="${things}"></my-list>
 `
   const expected = doc(`
+<my-list items="">
+  <h4 slot="title">My list</h4>
+  <ul>
+    <li>one</li>
+    <li>two</li>
+    <li>three</li>
+  </ul>
+</my-list>
 <template id="my-list-template">
   <slot name="title">
     <h4>My list</h4>
@@ -308,14 +316,6 @@ test('pass attribute array values correctly', t => {
     }
   </script>
 </template>
-<my-list items="">
-  <h4 slot="title">My list</h4>
-  <ul>
-    <li>one</li>
-    <li>two</li>
-    <li>three</li>
-  </ul>
-</my-list>
   `)
   t.equal(
     strip(actual),
@@ -342,6 +342,20 @@ test('update deeply nested slots', t=> {
     </my-content>
   </my-content>`
   const expected = doc(`
+  <my-content>
+    <h2>My Content</h2>
+    <h3 slot="title">
+      Title
+    </h3>
+    <my-content>
+      <h2>My Content</h2>
+      <h3 slot="title">Second</h3>
+      <my-content>
+        <h2>My Content</h2>
+        <h3 slot="title">Third</h3>
+      </my-content>
+    </my-content>
+  </my-content>
 <template id="my-content-template">
   <h2>My Content</h2>
   <slot name="title">
@@ -362,20 +376,6 @@ test('update deeply nested slots', t=> {
     }
   </script>
 </template>
-  <my-content>
-    <h2>My Content</h2>
-    <h3 slot="title">
-      Title
-    </h3>
-    <my-content>
-      <h2>My Content</h2>
-      <h3 slot="title">Second</h3>
-      <my-content>
-        <h2>My Content</h2>
-        <h3 slot="title">Third</h3>
-      </my-content>
-    </my-content>
-  </my-content>
 `)
   t.equal(
     strip(actual),
@@ -399,6 +399,20 @@ test('fill nested rendered slots', t=> {
 </my-list-container>
   `
   const expected = doc(`
+<my-list-container items="">
+  <h2>My List Container</h2>
+  <span slot="title">
+    YOLO
+  </span>
+  <my-list items="">
+    <h4 slot="title">Content List</h4>
+    <ul>
+      <li>one</li>
+      <li>two</li>
+      <li>three</li>
+    </ul>
+  </my-list>
+</my-list-container>
 <template id="my-list-container-template">
   <h2>My List Container</h2>
   <slot name="title">
@@ -439,20 +453,6 @@ test('fill nested rendered slots', t=> {
     }
   </script>
 </template>
-<my-list-container items="">
-  <h2>My List Container</h2>
-  <span slot="title">
-    YOLO
-  </span>
-  <my-list items="">
-    <h4 slot="title">Content List</h4>
-    <ul>
-      <li>one</li>
-      <li>two</li>
-      <li>three</li>
-    </ul>
-  </my-list>
-</my-list-container>
 `)
   t.equal(
     strip(actual),
@@ -484,10 +484,10 @@ test('should allow supplying custom head tag', t=> {
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
+<my-counter count="3"><h3>Count: 3</h3></my-counter>
 <template id="my-counter-template">
 <h3>Count: 0</h3>
 </template>
-<my-counter count="3"><h3>Count: 3</h3></my-counter>
 <script>Array.from(document.getElementsByTagName("template")).forEach(t => t.content.lastElementChild && 'SCRIPT' === t.content.lastElementChild.nodeName?document.body.appendChild(t.content.lastElementChild):'')</script>
 </body>
 </html>
@@ -532,18 +532,18 @@ test('should pass store to template', t => {
   })
   const actual = html`<my-store-data app-index="0" user-index="1"></my-store-data>`
   const expected = doc(`
-<template id="my-store-data-template">
-  <div>
-    <h1></h1>
-    <h1></h1>
-  </div>
-</template>
 <my-store-data app-index="0" user-index="1">
   <div>
     <h1>kim</h1>
     <h1>2</h1>
   </div>
 </my-store-data>
+<template id="my-store-data-template">
+  <div>
+    <h1></h1>
+    <h1></h1>
+  </div>
+</template>
   `)
   t.equal(strip(actual), strip(expected), 'Should render store data')
   t.end()
@@ -562,6 +562,9 @@ test('should run script transforms', t => {
   })
   const actual = html`<my-transform-script></my-transform-script>`
   const expected = doc(`
+<my-transform-script>
+  <h1>My Transform Script</h1>
+</my-transform-script>
 <template id="my-transform-script-template">
 <style>
   :host {
@@ -578,9 +581,6 @@ test('should run script transforms', t => {
   customElements.define('my-transform-script', MyTransformScript) yolo
 </script>
 </template>
-<my-transform-script>
-  <h1>My Transform Script</h1>
-</my-transform-script>
   `)
   t.equal(strip(actual), strip(expected), 'ran script transform script')
   t.end()
@@ -599,6 +599,9 @@ test('should run style transforms', t => {
   })
   const actual = html`<my-transform-script></my-transform-script>`
   const expected = doc(`
+<my-transform-script>
+  <h1>My Transform Script</h1>
+</my-transform-script>
 <template id="my-transform-script-template">
 <style>
   :host {
@@ -615,9 +618,6 @@ test('should run style transforms', t => {
   customElements.define('my-transform-script', MyTransformScript)
 </script>
 </template>
-<my-transform-script>
-  <h1>My Transform Script</h1>
-</my-transform-script>
   `)
   t.equal(strip(actual), strip(expected), 'ran style transform script')
   t.end()

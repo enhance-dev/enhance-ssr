@@ -15,16 +15,19 @@ export default function Enhancer(options={}) {
     const doc = parse(render(strings, ...values))
     const html = doc.childNodes.find(node => node.tagName === 'html')
     const body = html.childNodes.find(node => node.tagName === 'body')
-    processCustomElements(body, elements, store)
-    const templates = Object.keys(elements)
-        .map(name => template({
+    const { usedElements } = processCustomElements(body, elements, store)
+    const templateNames = Object.keys(elements)
+      .filter(element => usedElements.includes(element))
+    const templates = fragment(templateNames
+      .map(name => template({
           name,
           elements,
           store,
           scriptTransforms,
           styleTransforms
         }))
-        console.log('templates', templates)
+        .join('')
+    )
     addTemplateTags(body, templates)
     addScriptStripper(body)
     return serialize(doc).replace(/__b_\d+/g, '')
@@ -41,11 +44,12 @@ function render(strings, ...values) {
 }
 
 function processCustomElements(node, elements, store) {
-  const processedElements = []
+  const authoredTemplates = []
+  const usedElements = []
   const find = (node) => {
     for (const child of node.childNodes) {
       if (isCustomElement(child.tagName)) {
-        processedElements.push(child)
+        usedElements.push(child.tagName)
         const template = expandTemplate(child, elements, store)
         fillSlots(child, template)
       }
@@ -53,9 +57,11 @@ function processCustomElements(node, elements, store) {
     }
   }
   find(node)
-  return processedElements
+  return {
+    authoredTemplates,
+    usedElements
+  }
 }
-
 
 function expandTemplate(node, elements, store) {
   const frag = renderTemplate({
@@ -79,8 +85,7 @@ function renderTemplate({ name, elements, attrs=[], store={} }) {
   attrs = attrs ? attrsToState(attrs) : {}
   const state = { attrs, store }
   try {
-    const output = fragment(elements[name]({ html: render, state }))
-    return output
+    return fragment(elements[name]({ html: render, state }))
   }
   catch(err) {
     throw new Error(`Issue rendering template for ${name}.\n${err.message}`)
@@ -254,6 +259,7 @@ function applyScriptTransforms({ node, scriptTransforms }) {
   const raw = node.childNodes[0].value
   let out = raw
   scriptTransforms.forEach(transform => {
+    // Transform sets destination of transformed content
     out = transform({ attrs, raw: out, tagName: node.tagName })
   })
   if (!out.length) return
@@ -267,6 +273,7 @@ function applyStyleTransforms({ nodes, styleTransforms }) {
     const raw = node.childNodes[0].value
     let out = raw
     styleTransforms.forEach(transform => {
+      // Transform sets destination of transformed content
       out = transform({ attrs, raw: out, tagName: node.tagName })
     })
     if (!out.length) return
@@ -292,23 +299,15 @@ function template({ name, elements, store, scriptTransforms, styleTransforms }) 
     })
   }
 
-  return {
-    tagName: 'template',
-    nodeName: 'template',
-    attrs: [{ name: 'id', name: `${name}-template` }],
-    namespaceURI: 'http://www.w3.org/1999/xhtml',
-    childNodes: [ ...frag.childNodes ]
-  }
-
   return `
 <template id="${name}-template">
-  ${serialize(parsed)}
+  ${serialize(frag)}
 </template>
   `
 }
 
 function addTemplateTags(body, templates) {
-  body.childNodes.unshift(...templates)
+ body.childNodes.push(...templates.childNodes)
 }
 
 function addScriptStripper(body) {

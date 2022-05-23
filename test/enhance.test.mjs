@@ -596,9 +596,14 @@ test('should run script transforms', t => {
   <h1>My Transform Script</h1>
 </my-transform-script>
 <template id="my-transform-script-template">
-<style>
+<style scope="global">
   :host {
     display: block;
+  }
+</style>
+<style scope="component">
+  :slot {
+    display: inline-block;
   }
 </style>
 <h1>My Transform Script</h1>
@@ -623,8 +628,14 @@ test('should run style transforms', t => {
       'my-transform-script': MyTransformScript
     },
     styleTransforms: [
-      function({ attrs, raw }) {
-        return raw + '\n yolo'
+      function({ attrs, raw, tagName }) {
+        return `
+        ${raw}
+        /*
+        ${tagName} styles
+        */
+        `
+
       }
     ]
   })
@@ -634,10 +645,21 @@ test('should run style transforms', t => {
   <h1>My Transform Script</h1>
 </my-transform-script>
 <template id="my-transform-script-template">
-<style>
+<style scope="global">
   :host {
     display: block;
-  } yolo
+  }
+  /*
+  my-transform-script styles
+  */
+</style>
+<style scope="component">
+  :slot {
+    display: inline-block;
+  }
+  /*
+  my-transform-script styles
+  */
 </style>
 <h1>My Transform Script</h1>
 <script type="module">

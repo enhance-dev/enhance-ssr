@@ -276,7 +276,7 @@ function replaceSlots(node, slots) {
 }
 
 function applyScriptTransforms({ node, scriptTransforms, tagName }) {
-  const attrs = node.attrs || []
+  const attrs = node?.attrs || []
   const raw = node.childNodes[0].value
   let out = raw
   scriptTransforms.forEach(transform => {
@@ -287,33 +287,33 @@ function applyScriptTransforms({ node, scriptTransforms, tagName }) {
   return node
 }
 
-function applyStyleTransforms({ nodes, styleTransforms, tagName }) {
-  nodes.forEach(node => {
-    const attrs = node.attrs || []
-    const raw = node.childNodes[0].value
-    let out = raw
-    styleTransforms.forEach(transform => {
-      out = transform({ attrs, raw: out, tagName })
-    })
-    if (!out.length) return
-    node.childNodes[0].value = out
+function applyStyleTransforms({ node, styleTransforms, tagName }) {
+  const attrs = node?.attrs || []
+  const raw = node.childNodes[0].value
+  let out = raw
+  styleTransforms.forEach(transform => {
+    out = transform({ attrs, raw: out, tagName })
   })
-  return nodes
+  if (!out.length) return
+  node.childNodes[0].value = out
+  return node
 }
 
 function applyTransforms({ fragment, name, scriptTransforms, styleTransforms }) {
-  const script = fragment.childNodes.find(n => n.nodeName === 'script')
-  const style = fragment.childNodes.filter(n => n.nodeName === 'style')
+  const scripts = fragment.childNodes.filter(n => n.nodeName === 'script')
+  const styles = fragment.childNodes.filter(n => n.nodeName === 'style')
 
-  if (script && scriptTransforms.length) {
-    const scriptNode = applyScriptTransforms({ node: script, scriptTransforms, tagName: name })
-    script.childNodes[0].value = scriptNode.childNodes[0].value
+  if (scripts.length && scriptTransforms.length) {
+    scripts.forEach((s) => {
+      const scriptNode = applyScriptTransforms({ node: s, scriptTransforms, tagName: name })
+      s.childNodes[0].value = scriptNode.childNodes[0].value
+    })
   }
 
-  if (style.length && styleTransforms.length) {
-    const styleNodes = applyStyleTransforms({ nodes: style, styleTransforms, tagName: name })
-    style.forEach((s, i) => {
-        s.childNodes[0].value = styleNodes[i].childNodes[0].value
+  if (styles.length && styleTransforms.length) {
+    styles.forEach((s) => {
+      const styleNode = applyStyleTransforms({ node: s, styleTransforms, tagName: name })
+      s.childNodes[0].value = styleNode.childNodes[0].value
     })
   }
 

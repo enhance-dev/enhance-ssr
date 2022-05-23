@@ -1,9 +1,9 @@
-import { parse, fragment, serialize } from '@begin/parse5'
+import { parse, fragment, serialize, serializeOuter } from '@begin/parse5'
 import isCustomElement from './lib/is-custom-element.mjs'
 import { encode, decode } from './lib/transcode.mjs'
 let count = 0
 function getID() {
-  return `_${count++}`.toString(16)
+  return `✨${count++}`.toString(16)
 }
 
 export default function Enhancer(options={}) {
@@ -19,20 +19,26 @@ export default function Enhancer(options={}) {
     const doc = parse(render(strings, ...values))
     const html = doc.childNodes.find(node => node.tagName === 'html')
     const body = html.childNodes.find(node => node.tagName === 'body')
-    const { usedElements } = processCustomElements(body, elements, store)
+    const { authoredTemplates, usedElements } = processCustomElements(body, elements, store)
     const templateNames = Object.keys(elements)
       .filter(element => usedElements.includes(element))
     const templates = fragment(templateNames
       .map(name => template({
+          fragment: applyTransforms({
+            fragment: renderTemplate({ name, elements, store }),
+            scriptTransforms,
+            styleTransforms,
+            name
+          }) ,
           name,
-          elements,
-          store,
-          scriptTransforms,
-          styleTransforms
         }))
         .join('')
     )
     addTemplateTags(body, templates)
+    if (authoredTemplates) {
+      const ats = fragment(authoredTemplates.join(''))
+      addTemplateTags(body, ats)
+    }
     addScriptStripper(body)
     return serialize(doc).replace(/__b_\d+/g, '')
   }
@@ -53,23 +59,19 @@ function processCustomElements(node, elements, store) {
   const find = (node) => {
     for (const child of node.childNodes) {
       if (isCustomElement(child.tagName)) {
-        const slotChildren = child.childNodes.filter(
-          n => n.attrs?.find(a => a.name === 'slot')
-            ? n
-            : null
-        )
-        if (slotChildren.length) {
-          const id = child.attrs.find(attr => attr.name === 'id')?.value
+        if (child.childNodes.length) {
+          let id = child.attrs.find(attr => attr.name === 'id')?.value
           if(!id) {
-            child.attrs.push({ name: 'id', value: getID() })
+            id = getID()
+            child.attrs.push({ name: 'id', value: id })
           }
-          slots.forEach(
-            node => authoredContentTemplates.push(template({ name: id })).childNodes = slots)
-          )
+          const frag = fragment('')
+          frag.childNodes = [...child.childNodes]
+          authoredTemplates.push(template({ name: id, fragment: frag }))
         }
         usedElements.push(child.tagName)
-        const template = expandTemplate(child, elements, store)
-        fillSlots(child, template)
+        const expandedTemplate = expandTemplate(child, elements, store)
+        fillSlots(child, expandedTemplate)
       }
       if (child.childNodes) find(child)
     }
@@ -221,6 +223,7 @@ function findInserts(node) {
 function replaceSlots(node, slots) {
   slots.forEach(slot => {
     const value = slot.attrs.find(attr => attr.name === 'name')?.value
+    const is = slot.attrs.find(attr => attr.name === 'is')?.value
     const name = 'slot'
     const slotChildren = slot.childNodes.filter(
       n => {
@@ -232,8 +235,8 @@ function replaceSlots(node, slots) {
       if (!slotChildren.length) {
         // Only has text nodes
         const wrapperSpan = {
-          nodeName: 'span',
-          tagName: 'span',
+          nodeName: is ? is : 'span',
+          tagName: is ? is : 'span',
           attrs: [{ value, name }],
           namespaceURI: 'http://www.w3.org/1999/xhtml',
           childNodes: []
@@ -246,8 +249,8 @@ function replaceSlots(node, slots) {
       else if (slotChildren.length > 1) {
          // Has multiple children
          const wrapperDiv = {
-          nodeName: 'div',
-          tagName: 'div',
+          nodeName: is ? is : 'div',
+          tagName: is ? is : 'div',
           attrs: [{ value, name }],
           namespaceURI: 'http://www.w3.org/1999/xhtml',
           childNodes: []
@@ -272,25 +275,25 @@ function replaceSlots(node, slots) {
   return node
 }
 
-function applyScriptTransforms({ node, scriptTransforms }) {
+function applyScriptTransforms({ node, scriptTransforms, tagName }) {
   const attrs = node.attrs || []
   const raw = node.childNodes[0].value
   let out = raw
   scriptTransforms.forEach(transform => {
-    out = transform({ attrs, raw: out, tagName: node.tagName })
+    out = transform({ attrs, raw: out, tagName })
   })
   if (!out.length) return
   node.childNodes[0].value = out
   return node
 }
 
-function applyStyleTransforms({ nodes, styleTransforms }) {
+function applyStyleTransforms({ nodes, styleTransforms, tagName }) {
   nodes.forEach(node => {
     const attrs = node.attrs || []
     const raw = node.childNodes[0].value
     let out = raw
     styleTransforms.forEach(transform => {
-      out = transform({ attrs, raw: out, tagName: node.tagName })
+      out = transform({ attrs, raw: out, tagName })
     })
     if (!out.length) return
     node.childNodes[0].value = out
@@ -298,36 +301,35 @@ function applyStyleTransforms({ nodes, styleTransforms }) {
   return nodes
 }
 
-function applyTransforms() {
-
-}
-
-function template({ name, elements, store, scriptTransforms, styleTransforms }) {
-  const frag = renderTemplate({ name, elements, store })
-  const script = frag.childNodes.find(n => n.nodeName === 'script')
-  const style = frag.childNodes.filter(n => n.nodeName === 'style')
+function applyTransforms({ fragment, name, scriptTransforms, styleTransforms }) {
+  const script = fragment.childNodes.find(n => n.nodeName === 'script')
+  const style = fragment.childNodes.filter(n => n.nodeName === 'style')
 
   if (script && scriptTransforms.length) {
-    const scriptNode = applyScriptTransforms({ node: script, scriptTransforms })
+    const scriptNode = applyScriptTransforms({ node: script, scriptTransforms, tagName: name })
     script.childNodes[0].value = scriptNode.childNodes[0].value
   }
 
   if (style.length && styleTransforms.length) {
-    const styleNodes = applyStyleTransforms({ nodes: style, styleTransforms })
+    const styleNodes = applyStyleTransforms({ nodes: style, styleTransforms, tagName: name })
     style.forEach((s, i) => {
         s.childNodes[0].value = styleNodes[i].childNodes[0].value
     })
   }
 
+  return fragment
+}
+
+function template({ fragment, name }) {
   return `
 <template id="${name}-template">
-  ${serialize(frag)}
+  ${serialize(fragment)}
 </template>
   `
 }
 
 function addTemplateTags(body, templates) {
- body.childNodes.push(...templates.childNodes)
+  body.childNodes.push(...templates.childNodes)
 }
 
 function addScriptStripper(body) {

@@ -141,12 +141,12 @@ test('fill named slot', t=> {
     }
   })
   const actual = html`
-<my-paragraph>
+<my-paragraph id="0">
   <span slot="my-text">Slotted</span>
 </my-paragraph>
   `
   const expected = doc(`
-<my-paragraph>
+<my-paragraph id="0">
   <p><span slot="my-text">Slotted</span></p>
 </my-paragraph>
 <template id="my-paragraph-template">
@@ -167,6 +167,9 @@ test('fill named slot', t=> {
     }
   </script>
 </template>
+<template id="0-template">
+  <span slot="my-text">Slotted</span>
+</template>
 `)
   t.equal(
     strip(actual),
@@ -182,9 +185,9 @@ test('should not render default content in unnamed slots', t=> {
       'my-unnamed': MyUnnamed
     }
   })
-  const actual = html`<my-unnamed></my-unnamed>`
+  const actual = html`<my-unnamed id="0"></my-unnamed>`
   const expected = doc(`
-<my-unnamed></my-unnamed>
+<my-unnamed id="0"></my-unnamed>
 <template id="my-unnamed-template">
   <slot>This should not render</slot>
 </template>
@@ -204,15 +207,13 @@ test('add authored children to unnamed slot', t=> {
     }
   })
   const actual = html`
-  <my-content>
-    <h1>YOLO</h1>
+  <my-content id="0">
     <h4 slot=title>Custom title</h4>
   </my-content>`
   const expected = doc(`
-<my-content>
+<my-content id="0">
   <h2>My Content</h2>
   <h4 slot="title">Custom title</h4>
-  <h1>YOLO</h1>
 </my-content>
 <template id="my-content-template">
   <h2>My Content</h2>
@@ -233,6 +234,9 @@ test('add authored children to unnamed slot', t=> {
       }
     }
   </script>
+</template>
+<template id="0-template">
+  <h4 slot="title">Custom title</h4>
 </template>
 `)
   t.equal(
@@ -326,7 +330,7 @@ test('pass attribute array values correctly', t => {
 })
 
 
-test('update deeply nested slots', t=> {
+test('should update deeply nested slots', t=> {
   const html = enhance({
     elements: {
       'my-content': MyContent
@@ -334,23 +338,23 @@ test('update deeply nested slots', t=> {
   })
   const actual = html`
   <my-content>
-    <my-content>
+    <my-content id="0">
       <h3 slot="title">Second</h3>
-      <my-content>
+      <my-content id="1">
         <h3 slot="title">Third</h3>
       </my-content>
     </my-content>
   </my-content>`
   const expected = doc(`
-  <my-content>
+  <my-content id="✨0">
     <h2>My Content</h2>
     <h3 slot="title">
       Title
     </h3>
-    <my-content>
+    <my-content id="0">
       <h2>My Content</h2>
       <h3 slot="title">Second</h3>
-      <my-content>
+      <my-content id="1">
         <h2>My Content</h2>
         <h3 slot="title">Third</h3>
       </my-content>
@@ -376,6 +380,23 @@ test('update deeply nested slots', t=> {
     }
   </script>
 </template>
+<template id="✨0-template">
+  <my-content id="0">
+    <h3 slot="title">Second</h3>
+    <my-content id="1">
+      <h3 slot="title">Third</h3>
+    </my-content>
+  </my-content>
+</template>
+<template id="0-template">
+  <h3 slot="title">Second</h3>
+  <my-content id="1">
+    <h3 slot="title">Third</h3>
+  </my-content>
+</template>
+<template id="1-template">
+  <h3 slot="title">Third</h3>
+</template>
 `)
   t.equal(
     strip(actual),
@@ -399,12 +420,12 @@ test('fill nested rendered slots', t=> {
 </my-list-container>
   `
   const expected = doc(`
-<my-list-container items="">
+<my-list-container items="" id="✨1">
   <h2>My List Container</h2>
   <span slot="title">
     YOLO
   </span>
-  <my-list items="">
+  <my-list items="" id="✨2">
     <h4 slot="title">Content List</h4>
     <ul>
       <li>one</li>
@@ -453,6 +474,15 @@ test('fill nested rendered slots', t=> {
     }
   </script>
 </template>
+<template id="✨1-template">
+  <span slot="title">YOLO</span>
+</template>
+<template id="✨2-template">
+  <h4 slot="title">
+    Content List
+  </h4>
+</template>
+
 `)
   t.equal(
     strip(actual),
@@ -555,8 +585,8 @@ test('should run script transforms', t => {
       'my-transform-script': MyTransformScript
     },
     scriptTransforms: [
-      function({ attrs, raw }) {
-        return raw + '\n yolo'
+      function({ attrs, raw, tagName }) {
+        return `${raw}\n${tagName}`
       }
     ]
   })
@@ -578,7 +608,8 @@ test('should run script transforms', t => {
       super()
     }
   }
-  customElements.define('my-transform-script', MyTransformScript) yolo
+  customElements.define('my-transform-script', MyTransformScript)
+  my-transform-script
 </script>
 </template>
   `)

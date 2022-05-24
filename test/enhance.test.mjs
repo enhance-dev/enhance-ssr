@@ -12,6 +12,7 @@ import MyPre from './fixtures/templates/my-pre.mjs'
 import MyStoreData from './fixtures/templates/my-store-data.mjs'
 import MyUnnamed from './fixtures/templates/my-unnamed.mjs'
 import MyTransformScript from './fixtures/templates/my-transform-script.mjs'
+import MyTransformStyle from './fixtures/templates/my-transform-style.mjs'
 
 const strip = str => str.replace(/\r?\n|\r|\s\s+/g, '')
 function doc(string) {
@@ -596,16 +597,6 @@ test('should run script transforms', t => {
   <h1>My Transform Script</h1>
 </my-transform-script>
 <template id="my-transform-script-template">
-<style scope="global">
-  :host {
-    display: block;
-  }
-</style>
-<style scope="component">
-  :slot {
-    display: inline-block;
-  }
-</style>
 <h1>My Transform Script</h1>
 <script type="module">
   class MyTransformScript extends HTMLElement {
@@ -625,7 +616,7 @@ test('should run script transforms', t => {
 test('should run style transforms', t => {
   const html = enhance({
     elements: {
-      'my-transform-script': MyTransformScript
+      'my-transform-style': MyTransformStyle
     },
     styleTransforms: [
       function({ attrs, raw, tagName }) {
@@ -639,18 +630,18 @@ test('should run style transforms', t => {
       }
     ]
   })
-  const actual = html`<my-transform-script></my-transform-script>`
+  const actual = html`<my-transform-style></my-transform-style>`
   const expected = doc(`
-<my-transform-script>
-  <h1>My Transform Script</h1>
-</my-transform-script>
-<template id="my-transform-script-template">
+<my-transform-style>
+  <h1>My Transform Style</h1>
+</my-transform-style>
+<template id="my-transform-style-template">
 <style scope="global">
   :host {
     display: block;
   }
   /*
-  my-transform-script styles
+  my-transform-style styles
   */
 </style>
 <style scope="component">
@@ -658,20 +649,20 @@ test('should run style transforms', t => {
     display: inline-block;
   }
   /*
-  my-transform-script styles
+  my-transform-style styles
   */
 </style>
-<h1>My Transform Script</h1>
+<h1>My Transform Style</h1>
 <script type="module">
-  class MyTransformScript extends HTMLElement {
+  class MyTransformStyle extends HTMLElement {
     constructor() {
       super()
     }
   }
-  customElements.define('my-transform-script', MyTransformScript)
+  customElements.define('my-transform-style', MyTransformStyle)
 </script>
 </template>
   `)
-  t.equal(strip(actual), strip(expected), 'ran style transform script')
+  t.equal(strip(actual), strip(expected), 'ran style transform style')
   t.end()
 })

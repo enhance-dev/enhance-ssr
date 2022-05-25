@@ -85,6 +85,44 @@ The template added to the server rendered HTML page
 </template>
 ```
 
+If you author slotted elements they will be added to a template keyed by the custom element's id. If no id is authored one will be added during server side render.
+You can extend `@enhance/base-element` to manage progressive enhancement of your custom element and cut down on boilerplate for your Web Component.
+
+```javascript
+// Output
+<template id="hello-world-template">
+  <style>
+    h1 {
+      color: red;
+    }
+  </style>
+
+  <slot name="salutation">
+    <h1>Hello World</h1>
+  </slot>
+
+  <script type=module>
+    class HelloWorld extends BaseElement {
+      constructor () {
+        super()
+      }
+
+      connectedCallback () {
+        console.log('Why hello there 👋')
+      }
+    }
+
+    customElements.define('hello-world', HelloWorld)
+  </script>
+</template>
+
+<hello-world>
+  <h1 slot="salutation">
+    Whattap!
+  </h1>
+</hello-world>
+```
+
 Supply initital state to enhance and it will be passed along in a `store` object nested inside the state object.
 #### Node
 ```javascript

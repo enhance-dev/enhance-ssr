@@ -13,6 +13,7 @@ import MyStoreData from './fixtures/templates/my-store-data.mjs'
 import MyUnnamed from './fixtures/templates/my-unnamed.mjs'
 import MyTransformScript from './fixtures/templates/my-transform-script.mjs'
 import MyTransformStyle from './fixtures/templates/my-transform-style.mjs'
+import MySlotIs from './fixtures/templates/my-slot-is.mjs'
 
 const strip = str => str.replace(/\r?\n|\r|\s\s+/g, '')
 function doc(string) {
@@ -662,6 +663,29 @@ test('should run style transforms', t => {
   customElements.define('my-transform-style', MyTransformStyle)
 </script>
 </template>
+  `)
+  t.equal(strip(actual), strip(expected), 'ran style transform style')
+  t.end()
+})
+
+test('should respect is attribute', t => {
+  const html = enhance({
+    elements: {
+      'my-slot-is': MySlotIs
+    },
+  })
+  const actual = html`<my-slot-is></my-slot-is>`
+  const expected = doc(`
+  <my-slot-is>
+    <div slot="stuff">
+      stuff
+    </div>
+  </my-slot-is>
+  <template id="my-slot-is-template">
+    <slot is="div" name="stuff">
+      stuff
+    </slot>
+  </template>
   `)
   t.equal(strip(actual), strip(expected), 'ran style transform style')
   t.end()

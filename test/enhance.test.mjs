@@ -13,12 +13,16 @@ import MyStoreData from './fixtures/templates/my-store-data.mjs'
 import MyUnnamed from './fixtures/templates/my-unnamed.mjs'
 import MyTransformScript from './fixtures/templates/my-transform-script.mjs'
 import MyTransformStyle from './fixtures/templates/my-transform-style.mjs'
-import MySlotIs from './fixtures/templates/my-slot-is.mjs'
+import MySlotAs from './fixtures/templates/my-slot-as.mjs'
+
+function Head() {
+  return `
+<!DOCTYPE html>
+<head></head>
+  `
+}
 
 const strip = str => str.replace(/\r?\n|\r|\s\s+/g, '')
-function doc(string) {
-  return `<html><head></head><body>${string}<script>Array.from(document.getElementsByTagName("template")).forEach(t => t.content.lastElementChild && 'SCRIPT' === t.content.lastElementChild.nodeName?document.body.appendChild(t.content.lastElementChild):'')</script></body></html>`
-}
 
 test('Enhance should', t => {
   t.ok(true, 'it really should')
@@ -42,31 +46,40 @@ test('expand template', t => {
       'my-paragraph': MyParagraph
     }
   })
-  const actual = html`<my-paragraph></my-paragraph>`
-  const expected = doc(`
+  const actual = html`
+  ${Head()}
+  <my-paragraph></my-paragraph>
+  `
+  const expected = `
+<!DOCTYPE html>
+<html>
+<head>
+</head>
+<body>
 <my-paragraph>
   <p><span slot="my-text">My default text</span></p>
 </my-paragraph>
+<script type="module">
+  class MyParagraph extends HTMLElement {
+    constructor() {
+      super()
+    }
+
+    connectedCallback() {
+      console.log('My Paragraph')
+    }
+  }
+</script>
 <template id="my-paragraph-template">
   <p>
     <slot name="my-text">
       My default text
     </slot>
   </p>
-  <script type="module">
-    class MyParagraph extends HTMLElement {
-      constructor() {
-        super()
-      }
-
-      connectedCallback() {
-        console.log('My Paragraph')
-      }
-    }
-  </script>
 </template>
-
-`)
+</body>
+</html>
+`
   t.equal(
     strip(actual),
     strip(expected),
@@ -83,8 +96,15 @@ test('Passing state through multiple levels', t=> {
     }
   })
   const items = ['test']
-  const actual = html`<my-pre-page items="${items}"></my-pre-page>`
-  const expected = doc(`
+  const actual = html`
+  ${Head()}
+  <my-pre-page items="${items}"></my-pre-page>
+  `
+  const expected = `
+<!DOCTYPE html>
+<html>
+<head></head>
+<body>
   <my-pre-page items=""><my-pre items="">
   <pre>test</pre>
   </my-pre></my-pre-page>
@@ -94,7 +114,10 @@ test('Passing state through multiple levels', t=> {
   <template id="my-pre-template">
     <pre></pre>
   </template>
-`)
+</body>
+</html>
+`
+
   t.equal(
     strip(actual),
     strip(expected),
@@ -109,8 +132,15 @@ test('should wrap children with no root node in a div tag with slot name', t=> {
       'my-multiples': MyMultiples
     }
   })
-  const actual = html`<my-multiples></my-multiples>`
-  const expected = doc(`
+  const actual = html`
+  ${Head()}
+  <my-multiples></my-multiples>
+  `
+  const expected = `
+<!DOCTYPE html>
+<html>
+<head></head>
+<body>
 <my-multiples>
   <div slot="my-content">
     My default text
@@ -127,7 +157,10 @@ test('should wrap children with no root node in a div tag with slot name', t=> {
     <code> a code block</code>
   </slot>
 </template>
-`)
+</body>
+</html>
+`
+
   t.equal(
     strip(actual),
     strip(expected),
@@ -143,36 +176,44 @@ test('fill named slot', t=> {
     }
   })
   const actual = html`
+${Head()}
 <my-paragraph id="0">
   <span slot="my-text">Slotted</span>
 </my-paragraph>
   `
-  const expected = doc(`
+  const expected = `
+<!DOCTYPE html>
+<html>
+<head></head>
+<body>
 <my-paragraph id="0">
   <p><span slot="my-text">Slotted</span></p>
 </my-paragraph>
+<script type="module">
+  class MyParagraph extends HTMLElement {
+    constructor() {
+      super()
+    }
+
+    connectedCallback() {
+      console.log('My Paragraph')
+    }
+  }
+</script>
 <template id="my-paragraph-template">
   <p>
     <slot name="my-text">
       My default text
     </slot>
   </p>
-  <script type="module">
-    class MyParagraph extends HTMLElement {
-      constructor() {
-        super()
-      }
-
-      connectedCallback() {
-        console.log('My Paragraph')
-      }
-    }
-  </script>
 </template>
 <template id="0-template">
   <span slot="my-text">Slotted</span>
 </template>
-`)
+</body>
+</html>
+`
+
   t.equal(
     strip(actual),
     strip(expected),
@@ -187,13 +228,23 @@ test('should not render default content in unnamed slots', t=> {
       'my-unnamed': MyUnnamed
     }
   })
-  const actual = html`<my-unnamed id="0"></my-unnamed>`
-  const expected = doc(`
+  const actual = html`
+  ${Head()}
+  <my-unnamed id="0"></my-unnamed>
+  `
+  const expected = `
+<!DOCTYPE html>
+<html>
+<head></head>
+<body>
 <my-unnamed id="0"></my-unnamed>
 <template id="my-unnamed-template">
   <slot>This should not render</slot>
 </template>
-`)
+</body>
+</html>
+`
+
   t.equal(
     strip(actual),
     strip(expected),
@@ -209,14 +260,30 @@ test('add authored children to unnamed slot', t=> {
     }
   })
   const actual = html`
+  ${Head()}
   <my-content id="0">
     <h4 slot=title>Custom title</h4>
   </my-content>`
-  const expected = doc(`
+  const expected = `
+<!DOCTYPE html>
+<html>
+<head></head>
+<body>
 <my-content id="0">
   <h2>My Content</h2>
   <h4 slot="title">Custom title</h4>
 </my-content>
+<script type="module">
+  class MyContent extends HTMLElement {
+    constructor() {
+      super()
+    }
+
+    connectedCallback() {
+      console.log('My Content')
+    }
+  }
+</script>
 <template id="my-content-template">
   <h2>My Content</h2>
   <slot name="title">
@@ -225,22 +292,13 @@ test('add authored children to unnamed slot', t=> {
     </h3>
   </slot>
   <slot></slot>
-  <script type="module">
-    class MyContent extends HTMLElement {
-      constructor() {
-        super()
-      }
-
-      connectedCallback() {
-        console.log('My Content')
-      }
-    }
-  </script>
 </template>
 <template id="0-template">
   <h4 slot="title">Custom title</h4>
 </template>
-`)
+</body>
+</html>
+`
   t.equal(
     strip(actual),
     strip(expected),
@@ -256,27 +314,35 @@ test('pass attributes as state', t=> {
     }
   })
   const actual = html`
+${Head()}
 <my-link href='/yolo' text='sketchy'></my-link>
 `
-  const expected = doc(`
+  const expected = `
+<!DOCTYPE html>
+<html>
+<head></head>
+<body>
 <my-link href="/yolo" text="sketchy">
   <a href="/yolo">sketchy</a>
 </my-link>
+<script type="module">
+  class MyLink extends HTMLElement {
+    constructor() {
+      super()
+    }
+
+    connectedCallback() {
+      console.log('My Link')
+    }
+  }
+</script>
 <template id="my-link-template">
   <a href=""></a>
-  <script type="module">
-    class MyLink extends HTMLElement {
-      constructor() {
-        super()
-      }
-
-      connectedCallback() {
-        console.log('My Link')
-      }
-    }
-  </script>
 </template>
-`)
+</body>
+</html>
+`
+
   t.equal(
     strip(actual),
     strip(expected),
@@ -293,9 +359,14 @@ test('pass attribute array values correctly', t => {
   })
   const things = [{ title: 'one' },{ title: 'two' },{ title: 'three' }]
   const actual = html`
+  ${Head()}
 <my-list items="${things}"></my-list>
 `
-  const expected = doc(`
+  const expected = `
+<!DOCTYPE html>
+<html>
+<head></head>
+<body>
 <my-list items="">
   <h4 slot="title">My list</h4>
   <ul>
@@ -304,25 +375,28 @@ test('pass attribute array values correctly', t => {
     <li>three</li>
   </ul>
 </my-list>
+<script type="module">
+  class MyList extends HTMLElement {
+    constructor() {
+      super()
+    }
+
+    connectedCallback() {
+      console.log('My List')
+    }
+  }
+</script>
 <template id="my-list-template">
   <slot name="title">
     <h4>My list</h4>
   </slot>
   <ul>
   </ul>
-  <script type="module">
-    class MyList extends HTMLElement {
-      constructor() {
-        super()
-      }
-
-      connectedCallback() {
-        console.log('My List')
-      }
-    }
-  </script>
 </template>
-  `)
+</body>
+</html>
+  `
+
   t.equal(
     strip(actual),
     strip(expected),
@@ -339,6 +413,7 @@ test('should update deeply nested slots', t=> {
     }
   })
   const actual = html`
+  ${Head()}
   <my-content>
     <my-content id="0">
       <h3 slot="title">Second</h3>
@@ -347,7 +422,12 @@ test('should update deeply nested slots', t=> {
       </my-content>
     </my-content>
   </my-content>`
-  const expected = doc(`
+
+  const expected = `
+<!DOCTYPE html>
+<html>
+<head></head>
+<body>
   <my-content id="✨0">
     <h2>My Content</h2>
     <h3 slot="title">
@@ -362,6 +442,17 @@ test('should update deeply nested slots', t=> {
       </my-content>
     </my-content>
   </my-content>
+<script type="module">
+  class MyContent extends HTMLElement {
+    constructor() {
+      super()
+    }
+
+    connectedCallback() {
+      console.log('My Content')
+    }
+  }
+</script>
 <template id="my-content-template">
   <h2>My Content</h2>
   <slot name="title">
@@ -370,17 +461,6 @@ test('should update deeply nested slots', t=> {
     </h3>
   </slot>
   <slot></slot>
-  <script type="module">
-    class MyContent extends HTMLElement {
-      constructor() {
-        super()
-      }
-
-      connectedCallback() {
-        console.log('My Content')
-      }
-    }
-  </script>
 </template>
 <template id="✨0-template">
   <my-content id="0">
@@ -399,7 +479,10 @@ test('should update deeply nested slots', t=> {
 <template id="1-template">
   <h3 slot="title">Third</h3>
 </template>
-`)
+</body>
+</html>
+`
+
   t.equal(
     strip(actual),
     strip(expected),
@@ -417,11 +500,16 @@ test('fill nested rendered slots', t=> {
   })
   const items = [{ title: 'one' },{ title: 'two' },{ title: 'three' }]
   const actual = html`
+  ${Head()}
 <my-list-container items="${items}">
   <span slot=title>YOLO</span>
 </my-list-container>
   `
-  const expected = doc(`
+  const expected = `
+<!DOCTYPE html>
+<html>
+<head></head>
+<body>
 <my-list-container items="" id="✨1">
   <h2>My List Container</h2>
   <span slot="title">
@@ -436,6 +524,28 @@ test('fill nested rendered slots', t=> {
     </ul>
   </my-list>
 </my-list-container>
+<script type="module">
+  class MyListContainer extends HTMLElement {
+    constructor() {
+      super()
+    }
+
+    connectedCallback() {
+      console.log('My List Container')
+    }
+  }
+</script>
+<script type="module">
+  class MyList extends HTMLElement {
+    constructor() {
+      super()
+    }
+
+    connectedCallback() {
+      console.log('My List')
+    }
+  }
+</script>
 <template id="my-list-container-template">
   <h2>My List Container</h2>
   <slot name="title">
@@ -446,17 +556,6 @@ test('fill nested rendered slots', t=> {
   <my-list items="">
     <h4 slot="title">Content List</h4>
   </my-list>
-  <script type="module">
-    class MyListContainer extends HTMLElement {
-      constructor() {
-        super()
-      }
-
-      connectedCallback() {
-        console.log('My List Container')
-      }
-    }
-  </script>
 </template>
 <template id="my-list-template">
   <slot name="title">
@@ -464,17 +563,6 @@ test('fill nested rendered slots', t=> {
   </slot>
   <ul>
   </ul>
-  <script type="module">
-    class MyList extends HTMLElement {
-      constructor() {
-        super()
-      }
-
-      connectedCallback() {
-        console.log('My List')
-      }
-    }
-  </script>
 </template>
 <template id="✨1-template">
   <span slot="title">YOLO</span>
@@ -484,8 +572,9 @@ test('fill nested rendered slots', t=> {
     Content List
   </h4>
 </template>
-
-`)
+</body>
+</html>
+`
   t.equal(
     strip(actual),
     strip(expected),
@@ -500,15 +589,20 @@ test('should allow supplying custom head tag', t=> {
       'my-counter': MyCounter
     }
   })
-  const actual = html`
+  const myHead = `
+    <!DOCTYPE html>
     <head>
       <meta charset="utf-8">
       <title>Yolo!</title>
       <link rel="stylesheet" href="/style.css">
     </head>
+    `
+  const actual = html`
+    ${myHead}
     <my-counter count="3"></my-counter>
     `
   const expected = `
+<!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8">
@@ -520,7 +614,6 @@ test('should allow supplying custom head tag', t=> {
 <template id="my-counter-template">
 <h3>Count: 0</h3>
 </template>
-<script>Array.from(document.getElementsByTagName("template")).forEach(t => t.content.lastElementChild && 'SCRIPT' === t.content.lastElementChild.nodeName?document.body.appendChild(t.content.lastElementChild):'')</script>
 </body>
 </html>
   `
@@ -562,8 +655,15 @@ test('should pass store to template', t => {
     },
     initialState
   })
-  const actual = html`<my-store-data app-index="0" user-index="1"></my-store-data>`
-  const expected = doc(`
+  const actual = html`
+  ${Head()}
+  <my-store-data app-index="0" user-index="1"></my-store-data>
+  `
+  const expected = `
+<!DOCTYPE html>
+<html>
+<head></head>
+<body>
 <my-store-data app-index="0" user-index="1">
   <div>
     <h1>kim</h1>
@@ -576,7 +676,10 @@ test('should pass store to template', t => {
     <h1></h1>
   </div>
 </template>
-  `)
+</body>
+</html>
+  `
+
   t.equal(strip(actual), strip(expected), 'Should render store data')
   t.end()
 })
@@ -592,13 +695,18 @@ test('should run script transforms', t => {
       }
     ]
   })
-  const actual = html`<my-transform-script></my-transform-script>`
-  const expected = doc(`
+  const actual = html`
+  ${Head()}
+  <my-transform-script></my-transform-script>
+  `
+  const expected = `
+<!DOCTYPE html>
+<html>
+<head></head>
+<body>
 <my-transform-script>
   <h1>My Transform Script</h1>
 </my-transform-script>
-<template id="my-transform-script-template">
-<h1>My Transform Script</h1>
 <script type="module">
   class MyTransformScript extends HTMLElement {
     constructor() {
@@ -608,8 +716,13 @@ test('should run script transforms', t => {
   customElements.define('my-transform-script', MyTransformScript)
   my-transform-script
 </script>
+<template id="my-transform-script-template">
+<h1>My Transform Script</h1>
 </template>
-  `)
+</body>
+</html>
+  `
+
   t.equal(strip(actual), strip(expected), 'ran script transform script')
   t.end()
 })
@@ -631,12 +744,14 @@ test('should run style transforms', t => {
       }
     ]
   })
-  const actual = html`<my-transform-style></my-transform-style>`
-  const expected = doc(`
-<my-transform-style>
-  <h1>My Transform Style</h1>
-</my-transform-style>
-<template id="my-transform-style-template">
+  const actual = html`
+  ${Head()}
+  <my-transform-style></my-transform-style>
+  `
+  const expected = `
+<!DOCTYPE html>
+<html>
+<head>
 <style scope="global">
   :host {
     display: block;
@@ -645,6 +760,20 @@ test('should run style transforms', t => {
   my-transform-style styles
   */
 </style>
+</head>
+<body>
+<my-transform-style>
+  <h1>My Transform Style</h1>
+</my-transform-style>
+<script type="module">
+  class MyTransformStyle extends HTMLElement {
+    constructor() {
+      super()
+    }
+  }
+  customElements.define('my-transform-style', MyTransformStyle)
+</script>
+<template id="my-transform-style-template">
 <style scope="component">
   :slot {
     display: inline-block;
@@ -654,39 +783,44 @@ test('should run style transforms', t => {
   */
 </style>
 <h1>My Transform Style</h1>
-<script type="module">
-  class MyTransformStyle extends HTMLElement {
-    constructor() {
-      super()
-    }
-  }
-  customElements.define('my-transform-style', MyTransformStyle)
-</script>
 </template>
-  `)
+</body>
+</html>
+  `
+
   t.equal(strip(actual), strip(expected), 'ran style transform style')
   t.end()
 })
 
-test('should respect is attribute', t => {
+test('should respect as attribute', t => {
   const html = enhance({
     elements: {
-      'my-slot-is': MySlotIs
+      'my-slot-as': MySlotAs
     },
   })
-  const actual = html`<my-slot-is></my-slot-is>`
-  const expected = doc(`
-  <my-slot-is>
+  const actual = html`
+  ${Head()}
+  <my-slot-as></my-slot-as>
+  `
+  const expected = `
+<!DOCTYPE html>
+<html>
+<head>
+</head>
+<body>
+  <my-slot-as>
     <div slot="stuff">
       stuff
     </div>
-  </my-slot-is>
-  <template id="my-slot-is-template">
-    <slot is="div" name="stuff">
+  </my-slot-as>
+  <template id="my-slot-as-template">
+    <slot as="div" name="stuff">
       stuff
     </slot>
   </template>
-  `)
-  t.equal(strip(actual), strip(expected), 'ran style transform style')
+</body>
+</html>
+  `
+  t.equal(strip(actual), strip(expected), 'respects as attribute')
   t.end()
 })

@@ -26,7 +26,7 @@ export default function HelloWorld({ html, state }) {
   const { attrs } = state
   const { greeting='Hello World' } = attrs
   return html`
-    <style>
+    <style scope="global">
       h1 {
         color: red;
       }
@@ -57,32 +57,38 @@ export default function HelloWorld({ html, state }) {
 The template added to the server rendered HTML page
 ```javascript
 // Output
-<template id="hello-world-template">
-  <style>
+<head>
+  <style scope="global">
     h1 {
       color: red;
     }
   </style>
+</head>
 
-  <h1>Hello World</h1>
+<body>
 
-  <script type=module>
-    class HelloWorld extends HTMLElement {
-      constructor () {
-        super()
-        const template = document.getElementById('hello-world-template')
-        this.attachShadow({ mode: 'open' })
-          .appendChild(template.content.cloneNode(true))
-      }
-
-      connectedCallback () {
-        console.log('Why hello there 👋')
-      }
+<script type="module">
+  class HelloWorld extends HTMLElement {
+    constructor () {
+      super()
+      const template = document.getElementById('hello-world-template')
+      this.attachShadow({ mode: 'open' })
+        .appendChild(template.content.cloneNode(true))
     }
 
-    customElements.define('hello-world', HelloWorld)
-  </script>
+    connectedCallback () {
+      console.log('Why hello there 👋')
+    }
+  }
+
+  customElements.define('hello-world', HelloWorld)
+</script>
+
+<template id="hello-world-template">
+  <h1>Hello World</h1>
 </template>
+
+</body>
 ```
 
 If you author slotted elements they will be added to a template keyed by the custom element's id. If no id is authored one will be added during server side render.
@@ -90,37 +96,40 @@ You can extend `@enhance/base-element` to manage progressive enhancement of your
 
 ```javascript
 // Output
-<template id="hello-world-template">
-  <style>
+<head>
+  <style scope="global">
     h1 {
       color: red;
     }
   </style>
-
-  <slot name="salutation">
-    <h1>Hello World</h1>
-  </slot>
-
-  <script type=module>
-    class HelloWorld extends BaseElement {
-      constructor () {
-        super()
-      }
-
-      connectedCallback () {
-        console.log('Why hello there 👋')
-      }
-    }
-
-    customElements.define('hello-world', HelloWorld)
-  </script>
-</template>
-
+</head>
+<body>
 <hello-world>
   <h1 slot="salutation">
     Whattap!
   </h1>
 </hello-world>
+
+<script type="module">
+  class HelloWorld extends BaseElement {
+    constructor () {
+      super()
+    }
+
+    connectedCallback () {
+      console.log('Why hello there 👋')
+    }
+  }
+
+  customElements.define('hello-world', HelloWorld)
+</script>
+
+<template id="hello-world-template">
+  <slot name="salutation">
+    <h1>Hello World</h1>
+  </slot>
+</template>
+</body>
 ```
 
 Supply initital state to enhance and it will be passed along in a `store` object nested inside the state object.
@@ -245,7 +254,5 @@ function MyTransformScript({ html }) {
 
 console.log(html`<my-transform-script></my-transform-script>`)
 ```
-
-> ⚠️ Enhance renders one line of JavaScript into the page for extracting script tags from your templates.
 
 P.S. Enhance works really well with [Architect](arc.codes).

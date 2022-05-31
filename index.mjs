@@ -19,9 +19,29 @@ export default function Enhancer(options={}) {
     const doc = parse(render(strings, ...values))
     const html = doc.childNodes.find(node => node.tagName === 'html')
     const body = html.childNodes.find(node => node.tagName === 'body')
+    const head = html.childNodes.find(node => node.tagName === 'head')
     const { authoredTemplates, usedElements } = processCustomElements(body, elements, store)
+
     const templateNames = Object.keys(elements)
       .filter(element => usedElements.includes(element))
+
+    const templates = fragment(templateNames
+      .map(name => {
+        const renderedFragment = renderTemplate({ name, elements, store })
+        const { scriptNodes, styleNodes, transformedFragment }  = applyTransforms({
+          fragment: renderedFragment,
+          scriptTransforms,
+          styleTransforms,
+          name
+        })
+        appendNodes(body, scriptNodes)
+        appendNodes(head, styleNodes)
+        return template({ fragment: transformedFragment, name})
+      }).join('')
+    )
+
+
+    /*
     const templates = fragment(templateNames
       .map(name => template({
           fragment: applyTransforms({
@@ -29,17 +49,19 @@ export default function Enhancer(options={}) {
             scriptTransforms,
             styleTransforms,
             name
-          }) ,
+          }),
           name,
-        }))
-        .join('')
+        })
+      )
+      .join('')
     )
-    addTemplateTags(body, templates)
+    */
+
+    appendChildNodes(body, templates)
     if (authoredTemplates) {
       const ats = fragment(authoredTemplates.join(''))
-      addTemplateTags(body, ats)
+      appendChildNodes(body, ats)
     }
-    addScriptStripper(body)
     return serialize(doc).replace(/__b_\d+/g, '')
   }
 }
@@ -223,7 +245,7 @@ function findInserts(node) {
 function replaceSlots(node, slots) {
   slots.forEach(slot => {
     const value = slot.attrs.find(attr => attr.name === 'name')?.value
-    const is = slot.attrs.find(attr => attr.name === 'is')?.value
+    const asTag = slot.attrs.find(attr => attr.name === 'as')?.value
     const name = 'slot'
     const slotChildren = slot.childNodes.filter(
       n => {
@@ -235,8 +257,8 @@ function replaceSlots(node, slots) {
       if (!slotChildren.length) {
         // Only has text nodes
         const wrapperSpan = {
-          nodeName: is ? is : 'span',
-          tagName: is ? is : 'span',
+          nodeName: asTag ? asTag : 'span',
+          tagName: asTag ? asTag : 'span',
           attrs: [{ value, name }],
           namespaceURI: 'http://www.w3.org/1999/xhtml',
           childNodes: []
@@ -249,8 +271,8 @@ function replaceSlots(node, slots) {
       else if (slotChildren.length > 1) {
          // Has multiple children
          const wrapperDiv = {
-          nodeName: is ? is : 'div',
-          tagName: is ? is : 'div',
+          nodeName: asTag ? asTag : 'div',
+          tagName: asTag ? asTag : 'div',
           attrs: [{ value, name }],
           namespaceURI: 'http://www.w3.org/1999/xhtml',
           childNodes: []
@@ -300,24 +322,32 @@ function applyStyleTransforms({ node, styleTransforms, tagName }) {
 }
 
 function applyTransforms({ fragment, name, scriptTransforms, styleTransforms }) {
-  const scripts = fragment.childNodes.filter(n => n.nodeName === 'script')
-  const styles = fragment.childNodes.filter(n => n.nodeName === 'style')
+  const scriptNodes = fragment.childNodes.filter(n => n.nodeName === 'script')
+  const styleNodes = fragment.childNodes.filter(n => n.nodeName === 'style')
 
-  if (scripts.length && scriptTransforms.length) {
-    scripts.forEach((s) => {
+  if (scriptNodes.length && scriptTransforms.length) {
+    scriptNodes.forEach((s) => {
       const scriptNode = applyScriptTransforms({ node: s, scriptTransforms, tagName: name })
       s.childNodes[0].value = scriptNode.childNodes[0].value
     })
   }
 
-  if (styles.length && styleTransforms.length) {
-    styles.forEach((s) => {
+  if (styleNodes.length && styleTransforms.length) {
+    styleNodes.forEach((s) => {
       const styleNode = applyStyleTransforms({ node: s, styleTransforms, tagName: name })
       s.childNodes[0].value = styleNode.childNodes[0].value
     })
   }
 
-  return fragment
+  scriptNodes.forEach(s => fragment.childNodes.splice(fragment.childNodes.indexOf(s), 1))
+  const filteredStyleNodes = styleNodes.filter(s => s.attrs.find(attr => attr.name === 'scope')?.value === 'global')
+  filteredStyleNodes.forEach(s => fragment.childNodes.splice(fragment.childNodes.indexOf(s), 1))
+
+  return {
+    transformedFragment: fragment,
+    scriptNodes,
+    styleNodes: filteredStyleNodes
+  }
 }
 
 function template({ fragment, name }) {
@@ -328,11 +358,10 @@ function template({ fragment, name }) {
   `
 }
 
-function addTemplateTags(body, templates) {
-  body.childNodes.push(...templates.childNodes)
+function appendChildNodes(target, node) {
+  target.childNodes.push(...node.childNodes)
 }
 
-function addScriptStripper(body) {
- const stripper = fragment(`<script>Array.from(document.getElementsByTagName("template")).forEach(t => t.content.lastElementChild && 'SCRIPT' === t.content.lastElementChild.nodeName?document.body.appendChild(t.content.lastElementChild):'')</script>`)
- body.childNodes.push(...stripper.childNodes)
+function appendNodes(target, nodes) {
+  target.childNodes.push(...nodes)
 }

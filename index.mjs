@@ -40,23 +40,6 @@ export default function Enhancer(options={}) {
       }).join('')
     )
 
-
-    /*
-    const templates = fragment(templateNames
-      .map(name => template({
-          fragment: applyTransforms({
-            fragment: renderTemplate({ name, elements, store }),
-            scriptTransforms,
-            styleTransforms,
-            name
-          }),
-          name,
-        })
-      )
-      .join('')
-    )
-    */
-
     appendChildNodes(body, templates)
     if (authoredTemplates) {
       const ats = fragment(authoredTemplates.join(''))

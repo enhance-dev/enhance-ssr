@@ -787,7 +787,7 @@ test('should run style transforms', t => {
   customElements.define('my-transform-style', MyTransformStyle)
 </script>
 <template id="my-transform-style-template">
-<style scope="component">
+<style>
   :slot {
     display: inline-block;
   }

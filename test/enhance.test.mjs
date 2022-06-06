@@ -755,7 +755,7 @@ test('should run style transforms', t => {
 <html>
 <head>
 <style>
-  
+
   :host {
     display: block;
   }
@@ -763,8 +763,8 @@ test('should run style transforms', t => {
   my-transform-style styles
   context: markup
   */
- 
- :slot {
+
+  :slot {
     display: inline-block;
   }
   /*
@@ -851,7 +851,7 @@ test('should not add duplicated style tags to head', t => {
   my-transform-style styles
   context: markup
   */
-  
+
 </style>
 </head>
 <body>
@@ -870,7 +870,7 @@ test('should not add duplicated style tags to head', t => {
   customElements.define('my-transform-style', MyTransformStyle)
 </script>
 <template id="my-transform-style-template">
-<style scope="component">
+<style>
   :slot {
     display: inline-block;
   }
@@ -888,6 +888,7 @@ test('should not add duplicated style tags to head', t => {
   t.equal(strip(actual), strip(expected), 'removed duplicate style sheet')
   t.end()
 })
+
 test('should respect as attribute', t => {
   const html = enhance({
     elements: {

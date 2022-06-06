@@ -6,9 +6,13 @@ function getID() {
   return `✨${count++}`.toString(16)
 }
 
-import crypto from 'crypto'
-function hash(str) {
-  return crypto.createHash('md5').update(str).digest('hex')
+// function hash(s){
+//   return s.split("").reduce(function(a,b){a=((a<<5)-a)+b.charCodeAt(0);return a&a},0);              
+// }
+function hash(s) {
+    for(var i = 0, h = 0; i < s.length; i++)
+        h = Math.imul(31, h) + s.charCodeAt(i) | 0;
+    return h;
 }
 
 export default function Enhancer(options={}) {
@@ -45,14 +49,31 @@ export default function Enhancer(options={}) {
       }).join('')
     )
 
-    let deduped = {}
-    collectedStyles.flat().forEach(s => {
-      const fingerprint = hash(s.childNodes[0].value)
-      deduped[fingerprint] = s
-    })
-    const dedupedStyles = Object.values(deduped)
+    if (collectedStyles.length) {
+      const uniqueStyles = collectedStyles.flat().reduce((acc, style) => {
+        if (style?.childNodes?.[0]?.value) return { ...acc, [style.childNodes[0].value]: '' };
+        return {...acc}
+      }, { })
+      const mergedCssString  = Object.keys(uniqueStyles).join('\n') 
+      const mergedStyles = mergedCssString? `<style>${mergedCssString}</style>`:''
+      if (mergedStyles) { 
+        const stylesNodeHead = [fragment(mergedStyles).childNodes[0]]
+        appendNodes(head, stylesNodeHead)
+      }
+    }
+    
 
-    appendNodes(head, dedupedStyles)
+    // collectedStyles.flat().forEach(s => {
+    //   const styleString = s.childNodes[0].value
+
+
+    //   const fingerprint = hash(s.childNodes[0].value)
+    //   deduped[fingerprint] = s
+    // })
+    // const dedupedStyles = Object.values(deduped)
+
+
+
     appendChildNodes(body, templates)
     if (authoredTemplates) {
       const ats = fragment(authoredTemplates.join(''))

@@ -754,7 +754,8 @@ test('should run style transforms', t => {
 <!DOCTYPE html>
 <html>
 <head>
-<style scope="global">
+<style>
+  
   :host {
     display: block;
   }
@@ -762,15 +763,15 @@ test('should run style transforms', t => {
   my-transform-style styles
   context: markup
   */
-</style>
-<style scope="component">
-  :slot {
+ 
+ :slot {
     display: inline-block;
   }
   /*
   my-transform-style styles
   context: markup
   */
+
 </style>
 </head>
 <body>
@@ -801,7 +802,6 @@ test('should run style transforms', t => {
 </html>
   `
 
-  console.log(actual)
   t.equal(strip(actual), strip(expected), 'ran style transform style')
   t.end()
 })
@@ -836,16 +836,14 @@ test('should not add duplicated style tags to head', t => {
 <!DOCTYPE html>
 <html>
 <head>
-<style scope="global">
-  :host {
+<style>
+:host {
     display: block;
   }
   /*
   my-transform-style styles
   context: markup
   */
-</style>
-<style scope="component">
   :slot {
     display: inline-block;
   }
@@ -853,6 +851,7 @@ test('should not add duplicated style tags to head', t => {
   my-transform-style styles
   context: markup
   */
+  
 </style>
 </head>
 <body>
@@ -886,8 +885,7 @@ test('should not add duplicated style tags to head', t => {
 </html>
   `
 
-  console.log(actual)
-  t.equal(strip(actual), strip(expected), 'ran style transform style')
+  t.equal(strip(actual), strip(expected), 'removed duplicate style sheet')
   t.end()
 })
 test('should respect as attribute', t => {

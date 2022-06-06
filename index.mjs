@@ -6,6 +6,11 @@ function getID() {
   return `✨${count++}`.toString(16)
 }
 
+import crypto from 'crypto'
+function hash(str) {
+  return crypto.createHash('md5').update(str).digest('hex')
+}
+
 export default function Enhancer(options={}) {
   const {
     initialState={},
@@ -20,7 +25,7 @@ export default function Enhancer(options={}) {
     const html = doc.childNodes.find(node => node.tagName === 'html')
     const body = html.childNodes.find(node => node.tagName === 'body')
     const head = html.childNodes.find(node => node.tagName === 'head')
-    const { authoredTemplates, usedElements } = processCustomElements(body, elements, store)
+    const { authoredTemplates, usedElements, collectedStyles } = processCustomElements(body, elements, store, styleTransforms)
 
     const templateNames = Object.keys(elements)
       .filter(element => usedElements.includes(element))
@@ -28,18 +33,26 @@ export default function Enhancer(options={}) {
     const templates = fragment(templateNames
       .map(name => {
         const renderedFragment = renderTemplate({ name, elements, store })
-        const { scriptNodes, styleNodes, transformedFragment }  = applyTransforms({
+        const { scriptNodes, /*styleNodes,*/ transformedFragment }  = applyTransforms({
           fragment: renderedFragment,
           scriptTransforms,
           styleTransforms,
           name
         })
         appendNodes(body, scriptNodes)
-        appendNodes(head, styleNodes)
+        // appendNodes(head, styleNodes)
         return template({ fragment: transformedFragment, name})
       }).join('')
     )
 
+    let deduped = {}
+    collectedStyles.flat().forEach(s => {
+      const fingerprint = hash(s.childNodes[0].value)
+      deduped[fingerprint] = s
+    })
+    const dedupedStyles = Object.values(deduped)
+
+    appendNodes(head, dedupedStyles)
     appendChildNodes(body, templates)
     if (authoredTemplates) {
       const ats = fragment(authoredTemplates.join(''))
@@ -58,9 +71,10 @@ function render(strings, ...values) {
   return collect.join('')
 }
 
-function processCustomElements(node, elements, store) {
+function processCustomElements(node, elements, store, styleTransforms) {
   const authoredTemplates = []
   const usedElements = []
+  const collectedStyles = []
   const find = (node) => {
     for (const child of node.childNodes) {
       if (isCustomElement(child.tagName)) {
@@ -75,7 +89,8 @@ function processCustomElements(node, elements, store) {
           authoredTemplates.push(template({ name: id, fragment: frag }))
         }
         usedElements.push(child.tagName)
-        const expandedTemplate = expandTemplate(child, elements, store)
+        const { frag:expandedTemplate, styles:stylesToCollect } = expandTemplate(child, elements, store, styleTransforms)
+        collectedStyles.push(stylesToCollect)
         fillSlots(child, expandedTemplate)
       }
       if (child.childNodes) find(child)
@@ -84,26 +99,31 @@ function processCustomElements(node, elements, store) {
   find(node)
   return {
     authoredTemplates,
-    usedElements
+    usedElements,
+    collectedStyles
   }
 }
 
-function expandTemplate(node, elements, store) {
+function expandTemplate(node, elements, store, styleTransforms) {
+  const tagName = node.tagName
   const frag = renderTemplate({
     name: node.tagName,
     elements,
     attrs: node.attrs,
     store
   }) || ''
+  let styles= []
   for (const node of frag.childNodes) {
     if (node.nodeName === 'script') {
       frag.childNodes.splice(frag.childNodes.indexOf(node), 1)
     }
     if (node.nodeName === 'style') {
       frag.childNodes.splice(frag.childNodes.indexOf(node), 1)
+      const transformedStyle = applyStyleTransforms({ node, styleTransforms, tagName, context:"markup" })
+      if (transformedStyle) { styles.push(transformedStyle) }
     }
   }
-  return frag
+  return { frag, styles }
 }
 
 function renderTemplate({ name, elements, attrs=[], store={} }) {
@@ -292,14 +312,14 @@ function applyScriptTransforms({ node, scriptTransforms, tagName }) {
   return node
 }
 
-function applyStyleTransforms({ node, styleTransforms, tagName }) {
+function applyStyleTransforms({ node, styleTransforms, tagName, context='' }) {
   const attrs = node?.attrs || []
   const raw = node.childNodes[0].value
   let out = raw
   styleTransforms.forEach(transform => {
-    out = transform({ attrs, raw: out, tagName })
+    out = transform({ attrs, raw: out, tagName, context })
   })
-  if (!out.length) return
+  if (!out.length) { return }
   node.childNodes[0].value = out
   return node
 }
@@ -315,21 +335,28 @@ function applyTransforms({ fragment, name, scriptTransforms, styleTransforms }) 
     })
   }
 
+  let prune = []
   if (styleNodes.length && styleTransforms.length) {
-    styleNodes.forEach((s) => {
-      const styleNode = applyStyleTransforms({ node: s, styleTransforms, tagName: name })
-      s.childNodes[0].value = styleNode.childNodes[0].value
+    styleNodes.forEach((s,i) => {
+      const styleNode = applyStyleTransforms({ node: s, styleTransforms,tagName: name, context:"template" })
+      if (styleNode && s.childNodes.length) {
+        s.childNodes[0].value = styleNode.childNodes[0].value
+      } else { prune.push(i) }
     })
   }
+  prune.forEach((i) => fragment.childNodes.splice(fragment.childNodes.indexOf(styleNodes[i]), 1) ) 
+
 
   scriptNodes.forEach(s => fragment.childNodes.splice(fragment.childNodes.indexOf(s), 1))
-  const filteredStyleNodes = styleNodes.filter(s => s.attrs.find(attr => attr.name === 'scope')?.value === 'global')
-  filteredStyleNodes.forEach(s => fragment.childNodes.splice(fragment.childNodes.indexOf(s), 1))
+  // const filteredStyleNodes = styleNodes.filter(s => s.attrs.find(attr => attr.name === 'scope')?.value === 'global')
+  // filteredStyleNodes.forEach(s => fragment.childNodes.splice(fragment.childNodes.indexOf(s), 1))
+  // styleNodes.forEach((s) => { if (!s) {fragment.childNodes.splice(fragment.childNodes.indexOf(s), 1) } }) 
 
   return {
     transformedFragment: fragment,
     scriptNodes,
-    styleNodes: filteredStyleNodes
+    // styleNodes: filteredStyleNodes
+    // styleNodes
   }
 }
 

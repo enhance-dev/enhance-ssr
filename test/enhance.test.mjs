@@ -733,11 +733,13 @@ test('should run style transforms', t => {
       'my-transform-style': MyTransformStyle
     },
     styleTransforms: [
-      function({ attrs, raw, tagName }) {
+      function ({ attrs, raw, tagName, context }) {
+        if  (attrs.find(i=>i.name==="scope")?.value==="global"&&context==="template") return ''
         return `
         ${raw}
         /*
         ${tagName} styles
+        context: ${context}
         */
         `
 
@@ -752,13 +754,24 @@ test('should run style transforms', t => {
 <!DOCTYPE html>
 <html>
 <head>
-<style scope="global">
+<style>
+  
   :host {
     display: block;
   }
   /*
   my-transform-style styles
+  context: markup
   */
+ 
+ :slot {
+    display: inline-block;
+  }
+  /*
+  my-transform-style styles
+  context: markup
+  */
+
 </style>
 </head>
 <body>
@@ -780,6 +793,7 @@ test('should run style transforms', t => {
   }
   /*
   my-transform-style styles
+  context: template
   */
 </style>
 <h1>My Transform Style</h1>
@@ -792,6 +806,88 @@ test('should run style transforms', t => {
   t.end()
 })
 
+test('should not add duplicated style tags to head', t => {
+  const html = enhance({
+    elements: {
+      'my-transform-style': MyTransformStyle,
+    },
+    styleTransforms: [
+      function ({ attrs, raw, tagName, context }) {
+        // if tagged as global only add to the head
+        if  (attrs.find(i=>i.name==="scope")?.value==="global"&&context==="template") return ''
+
+        return `
+        ${raw}
+        /*
+        ${tagName} styles
+        context: ${context}
+        */
+        `
+
+      }
+    ]
+  })
+  const actual = html`
+  ${Head()}
+  <my-transform-style></my-transform-style>
+  <my-transform-style></my-transform-style>
+  `
+  const expected = `
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+:host {
+    display: block;
+  }
+  /*
+  my-transform-style styles
+  context: markup
+  */
+  :slot {
+    display: inline-block;
+  }
+  /*
+  my-transform-style styles
+  context: markup
+  */
+  
+</style>
+</head>
+<body>
+<my-transform-style>
+  <h1>My Transform Style</h1>
+</my-transform-style>
+<my-transform-style>
+  <h1>My Transform Style</h1>
+</my-transform-style>
+<script type="module">
+  class MyTransformStyle extends HTMLElement {
+    constructor() {
+      super()
+    }
+  }
+  customElements.define('my-transform-style', MyTransformStyle)
+</script>
+<template id="my-transform-style-template">
+<style scope="component">
+  :slot {
+    display: inline-block;
+  }
+  /*
+  my-transform-style styles
+  context: template
+  */
+</style>
+<h1>My Transform Style</h1>
+</template>
+</body>
+</html>
+  `
+
+  t.equal(strip(actual), strip(expected), 'removed duplicate style sheet')
+  t.end()
+})
 test('should respect as attribute', t => {
   const html = enhance({
     elements: {

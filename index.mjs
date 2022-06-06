@@ -6,15 +6,6 @@ function getID() {
   return `✨${count++}`.toString(16)
 }
 
-// function hash(s){
-//   return s.split("").reduce(function(a,b){a=((a<<5)-a)+b.charCodeAt(0);return a&a},0);              
-// }
-function hash(s) {
-    for(var i = 0, h = 0; i < s.length; i++)
-        h = Math.imul(31, h) + s.charCodeAt(i) | 0;
-    return h;
-}
-
 export default function Enhancer(options={}) {
   const {
     initialState={},
@@ -37,14 +28,13 @@ export default function Enhancer(options={}) {
     const templates = fragment(templateNames
       .map(name => {
         const renderedFragment = renderTemplate({ name, elements, store })
-        const { scriptNodes, /*styleNodes,*/ transformedFragment }  = applyTransforms({
+        const { scriptNodes, transformedFragment }  = applyTransforms({
           fragment: renderedFragment,
           scriptTransforms,
           styleTransforms,
           name
         })
         appendNodes(body, scriptNodes)
-        // appendNodes(head, styleNodes)
         return template({ fragment: transformedFragment, name})
       }).join('')
     )
@@ -62,18 +52,6 @@ export default function Enhancer(options={}) {
       }
     }
     
-
-    // collectedStyles.flat().forEach(s => {
-    //   const styleString = s.childNodes[0].value
-
-
-    //   const fingerprint = hash(s.childNodes[0].value)
-    //   deduped[fingerprint] = s
-    // })
-    // const dedupedStyles = Object.values(deduped)
-
-
-
     appendChildNodes(body, templates)
     if (authoredTemplates) {
       const ats = fragment(authoredTemplates.join(''))
@@ -369,15 +347,10 @@ function applyTransforms({ fragment, name, scriptTransforms, styleTransforms }) 
 
 
   scriptNodes.forEach(s => fragment.childNodes.splice(fragment.childNodes.indexOf(s), 1))
-  // const filteredStyleNodes = styleNodes.filter(s => s.attrs.find(attr => attr.name === 'scope')?.value === 'global')
-  // filteredStyleNodes.forEach(s => fragment.childNodes.splice(fragment.childNodes.indexOf(s), 1))
-  // styleNodes.forEach((s) => { if (!s) {fragment.childNodes.splice(fragment.childNodes.indexOf(s), 1) } }) 
 
   return {
     transformedFragment: fragment,
     scriptNodes,
-    // styleNodes: filteredStyleNodes
-    // styleNodes
   }
 }
 

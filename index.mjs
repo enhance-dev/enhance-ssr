@@ -20,11 +20,9 @@ export default function Enhancer(options={}) {
     const html = doc.childNodes.find(node => node.tagName === 'html')
     const body = html.childNodes.find(node => node.tagName === 'body')
     const head = html.childNodes.find(node => node.tagName === 'head')
-    const { authoredTemplates, usedElements, collectedStyles } = processCustomElements(body, elements, store, styleTransforms)
+    const { authoredTemplates, collectedStyles } = processCustomElements(body, elements, store, styleTransforms)
 
     const templateNames = Object.keys(elements)
-      .filter(element => usedElements.includes(element))
-
     const templates = fragment(templateNames
       .map(name => {
         const renderedFragment = renderTemplate({ name, elements, store })
@@ -44,14 +42,14 @@ export default function Enhancer(options={}) {
         if (style?.childNodes?.[0]?.value) return { ...acc, [style.childNodes[0].value]: '' };
         return {...acc}
       }, { })
-      const mergedCssString  = Object.keys(uniqueStyles).join('\n') 
+      const mergedCssString  = Object.keys(uniqueStyles).join('\n')
       const mergedStyles = mergedCssString? `<style>${mergedCssString}</style>`:''
-      if (mergedStyles) { 
+      if (mergedStyles) {
         const stylesNodeHead = [fragment(mergedStyles).childNodes[0]]
         appendNodes(head, stylesNodeHead)
       }
     }
-    
+
     appendChildNodes(body, templates)
     if (authoredTemplates) {
       const ats = fragment(authoredTemplates.join(''))
@@ -72,7 +70,6 @@ function render(strings, ...values) {
 
 function processCustomElements(node, elements, store, styleTransforms) {
   const authoredTemplates = []
-  const usedElements = []
   const collectedStyles = []
   const find = (node) => {
     for (const child of node.childNodes) {
@@ -87,7 +84,6 @@ function processCustomElements(node, elements, store, styleTransforms) {
           frag.childNodes = [...child.childNodes]
           authoredTemplates.push(template({ name: id, fragment: frag }))
         }
-        usedElements.push(child.tagName)
         const { frag:expandedTemplate, styles:stylesToCollect } = expandTemplate(child, elements, store, styleTransforms)
         collectedStyles.push(stylesToCollect)
         fillSlots(child, expandedTemplate)
@@ -98,7 +94,6 @@ function processCustomElements(node, elements, store, styleTransforms) {
   find(node)
   return {
     authoredTemplates,
-    usedElements,
     collectedStyles
   }
 }
@@ -343,7 +338,7 @@ function applyTransforms({ fragment, name, scriptTransforms, styleTransforms }) 
       } else { prune.push(i) }
     })
   }
-  prune.forEach((i) => fragment.childNodes.splice(fragment.childNodes.indexOf(styleNodes[i]), 1) ) 
+  prune.forEach((i) => fragment.childNodes.splice(fragment.childNodes.indexOf(styleNodes[i]), 1) )
 
 
   scriptNodes.forEach(s => fragment.childNodes.splice(fragment.childNodes.indexOf(s), 1))

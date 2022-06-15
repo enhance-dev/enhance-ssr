@@ -255,4 +255,4 @@ function MyTransformScript({ html }) {
 console.log(html`<my-transform-script></my-transform-script>`)
 ```
 
-P.S. Enhance works really well with [Architect](arc.codes).
+> P.S. Enhance works really well with [Architect](https://arc.codes).

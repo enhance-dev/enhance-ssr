@@ -6,6 +6,7 @@ import MyLink from './fixtures/templates/my-link.mjs'
 import MyListContainer from './fixtures/templates/my-list-container.mjs'
 import MyList from './fixtures/templates/my-list.mjs'
 import MyMultiples from './fixtures/templates/my-multiples.mjs'
+import MyOutline from './fixtures/my-outline.mjs'
 import MyParagraph from './fixtures/templates/my-paragraph.mjs'
 import MyPrePage from './fixtures/templates/my-pre-page.mjs'
 import MyPre from './fixtures/templates/my-pre.mjs'
@@ -165,6 +166,86 @@ test('should wrap children with no root node in a div tag with slot name', t=> {
     strip(actual),
     strip(expected),
     'Whew it wraps a multiple slot children with no root node in a div tag with the slot name added'
+  )
+  t.end()
+})
+
+test.only('should not duplicate slotted elements', t=> {
+ const html = enhance({
+    elements: {
+      'my-outline': MyOutline
+    }
+ })
+
+ const actual = html`
+${Head()}
+<my-outline>
+  <div slot="toc">things</div>
+</my-outline>
+ `
+ const expected = `
+<!DOCTYPE html>
+<html>
+<head>
+</head>
+<body>
+
+<my-outline id="✨0">
+  <aside id="outline">
+    <strong>On this page</strong>
+    <div slot="toc">things</div>
+
+    <strong>Further Reading</strong>
+    <ul class="list-none">
+      <li>things</li>
+    </ul>
+
+    <strong>Contribute</strong>
+    <ul class="list-none">
+      <li>stuff</li>
+    </ul>
+
+    <strong>Community</strong>
+    <ul class="list-none">
+      <li>other</li>
+    </ul>
+  </aside>
+</my-outline>
+
+<template id="my-outline-template">
+  <aside id="outline">
+    <strong>On this page</strong>
+    <slot name="toc"></slot>
+
+    <strong>Further Reading</strong>
+    <ul class="list-none">
+      <li>things</li>
+    </ul>
+
+    <strong>Contribute</strong>
+    <ul class="list-none">
+      <li>stuff</li>
+    </ul>
+
+    <strong>Community</strong>
+    <ul class="list-none">
+      <li>other</li>
+    </ul>
+  </aside>
+</template>
+
+<template id="✨0-template">
+  <div slot="toc">things</div>
+</template>
+
+</body>
+</html>
+    `
+
+  t.equal(
+    strip(actual),
+    strip(expected),
+    'It better not be duplicating slotted elements'
   )
   t.end()
 })

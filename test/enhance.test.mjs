@@ -215,7 +215,7 @@ ${Head()}
 <template id="my-outline-template">
   <aside id="outline">
     <strong>On this page</strong>
-    <slot name="toc"></slot>
+    <slot name="toc" class="toc"></slot>
 
     <strong>Further Reading</strong>
     <ul class="list-none">

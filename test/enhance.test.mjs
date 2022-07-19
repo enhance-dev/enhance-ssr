@@ -6,6 +6,7 @@ import MyLink from './fixtures/templates/my-link.mjs'
 import MyListContainer from './fixtures/templates/my-list-container.mjs'
 import MyList from './fixtures/templates/my-list.mjs'
 import MyMultiples from './fixtures/templates/my-multiples.mjs'
+import MyOutline from './fixtures/templates/my-outline.mjs'
 import MyParagraph from './fixtures/templates/my-paragraph.mjs'
 import MyPrePage from './fixtures/templates/my-pre-page.mjs'
 import MyPre from './fixtures/templates/my-pre.mjs'
@@ -165,6 +166,50 @@ test('should wrap children with no root node in a div tag with slot name', t=> {
     strip(actual),
     strip(expected),
     'Whew it wraps a multiple slot children with no root node in a div tag with the slot name added'
+  )
+  t.end()
+})
+
+test('should not duplicate slotted elements', t=> {
+ const html = enhance({
+    elements: {
+      'my-outline': MyOutline
+    }
+ })
+
+ const actual = html`
+${Head()}
+<my-outline>
+  <div slot="toc" class="toc">things</div>
+</my-outline>
+ `
+ const expected = `
+<!DOCTYPE html>
+<html>
+<head>
+</head>
+<body>
+
+  <my-outline id="✨0">
+    <div slot="toc" class="toc">things</div>
+  </my-outline>
+
+<template id="my-outline-template">
+    <slot name="toc" class="toc"></slot>
+</template>
+
+<template id="✨0-template">
+  <div slot="toc" class="toc">things</div>
+</template>
+
+</body>
+</html>
+    `
+
+  t.equal(
+    strip(actual),
+    strip(expected),
+    'It better not be duplicating slotted elements'
   )
   t.end()
 })
@@ -510,12 +555,12 @@ test('fill nested rendered slots', t=> {
 <html>
 <head></head>
 <body>
-<my-list-container items="" id="✨1">
+<my-list-container items="" id="✨0">
   <h2>My List Container</h2>
   <span slot="title">
     YOLO
   </span>
-  <my-list items="" id="✨2">
+  <my-list items="" id="✨1">
     <h4 slot="title">Content List</h4>
     <ul>
       <li>one</li>
@@ -564,10 +609,10 @@ test('fill nested rendered slots', t=> {
   <ul>
   </ul>
 </template>
-<template id="✨1-template">
+<template id="✨0-template">
   <span slot="title">YOLO</span>
 </template>
-<template id="✨2-template">
+<template id="✨1-template">
   <h4 slot="title">
     Content List
   </h4>

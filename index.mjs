@@ -52,7 +52,6 @@ export default function Enhancer(options={}) {
     const body = html.childNodes.find(node => node.tagName === 'body')
     const head = html.childNodes.find(node => node.tagName === 'head')
     const { authoredTemplates, collectedStyles } = processCustomElements(body, elements, store, styleTransforms)
-
     const templateNames = Object.keys(elements)
     const templates = fragment(templateNames
       .map(name => {
@@ -125,11 +124,12 @@ function expandTemplate(node, elements, store, styleTransforms) {
 function renderTemplate({ name, elements, attrs=[], store={} }) {
   attrs = attrs ? attrsToState(attrs) : {}
   const state = { attrs, store }
-  try {
-    return fragment(elements[name]({ html: render, state }))
+  const template = elements[name]
+  if (template) {
+    return fragment(template({ html: render, state }))
   }
-  catch(err) {
-    throw new Error(`Issue rendering template for ${name}.\n${err.message}`)
+  else {
+    console.warn(`Issue rendering template for ${name}.\n${err.message}`)
   }
 }
 

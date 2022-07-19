@@ -6,7 +6,7 @@ import MyLink from './fixtures/templates/my-link.mjs'
 import MyListContainer from './fixtures/templates/my-list-container.mjs'
 import MyList from './fixtures/templates/my-list.mjs'
 import MyMultiples from './fixtures/templates/my-multiples.mjs'
-import MyOutline from './fixtures/my-outline.mjs'
+import MyOutline from './fixtures/templates/my-outline.mjs'
 import MyParagraph from './fixtures/templates/my-paragraph.mjs'
 import MyPrePage from './fixtures/templates/my-pre-page.mjs'
 import MyPre from './fixtures/templates/my-pre.mjs'
@@ -170,7 +170,7 @@ test('should wrap children with no root node in a div tag with slot name', t=> {
   t.end()
 })
 
-test.only('should not duplicate slotted elements', t=> {
+test('should not duplicate slotted elements', t=> {
  const html = enhance({
     elements: {
       'my-outline': MyOutline
@@ -180,7 +180,7 @@ test.only('should not duplicate slotted elements', t=> {
  const actual = html`
 ${Head()}
 <my-outline>
-  <div slot="toc">things</div>
+  <div slot="toc" class="toc">things</div>
 </my-outline>
  `
  const expected = `
@@ -190,52 +190,16 @@ ${Head()}
 </head>
 <body>
 
-<my-outline id="✨0">
-  <aside id="outline">
-    <strong>On this page</strong>
-    <div slot="toc">things</div>
-
-    <strong>Further Reading</strong>
-    <ul class="list-none">
-      <li>things</li>
-    </ul>
-
-    <strong>Contribute</strong>
-    <ul class="list-none">
-      <li>stuff</li>
-    </ul>
-
-    <strong>Community</strong>
-    <ul class="list-none">
-      <li>other</li>
-    </ul>
-  </aside>
-</my-outline>
+  <my-outline id="✨0">
+    <div slot="toc" class="toc">things</div>
+  </my-outline>
 
 <template id="my-outline-template">
-  <aside id="outline">
-    <strong>On this page</strong>
     <slot name="toc" class="toc"></slot>
-
-    <strong>Further Reading</strong>
-    <ul class="list-none">
-      <li>things</li>
-    </ul>
-
-    <strong>Contribute</strong>
-    <ul class="list-none">
-      <li>stuff</li>
-    </ul>
-
-    <strong>Community</strong>
-    <ul class="list-none">
-      <li>other</li>
-    </ul>
-  </aside>
 </template>
 
 <template id="✨0-template">
-  <div slot="toc">things</div>
+  <div slot="toc" class="toc">things</div>
 </template>
 
 </body>
@@ -591,12 +555,12 @@ test('fill nested rendered slots', t=> {
 <html>
 <head></head>
 <body>
-<my-list-container items="" id="✨1">
+<my-list-container items="" id="✨0">
   <h2>My List Container</h2>
   <span slot="title">
     YOLO
   </span>
-  <my-list items="" id="✨2">
+  <my-list items="" id="✨1">
     <h4 slot="title">Content List</h4>
     <ul>
       <li>one</li>
@@ -645,10 +609,10 @@ test('fill nested rendered slots', t=> {
   <ul>
   </ul>
 </template>
-<template id="✨1-template">
+<template id="✨0-template">
   <span slot="title">YOLO</span>
 </template>
-<template id="✨2-template">
+<template id="✨1-template">
   <h4 slot="title">
     Content List
   </h4>

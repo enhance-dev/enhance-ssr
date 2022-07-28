@@ -191,7 +191,7 @@ ${Head()}
 </head>
 <body>
 
-  <my-outline id="✨0">
+  <my-outline id="e0">
     <div slot="toc" class="toc">things</div>
   </my-outline>
 
@@ -199,7 +199,7 @@ ${Head()}
     <slot name="toc" class="toc"></slot>
 </template>
 
-<template id="✨0-template">
+<template id="e0-template">
   <div slot="toc" class="toc">things</div>
 </template>
 
@@ -474,7 +474,7 @@ test('should update deeply nested slots', t=> {
 <html>
 <head></head>
 <body>
-  <my-content id="✨0">
+  <my-content id="e0">
     <h2>My Content</h2>
     <h3 slot="title">
       Title
@@ -508,7 +508,7 @@ test('should update deeply nested slots', t=> {
   </slot>
   <slot></slot>
 </template>
-<template id="✨0-template">
+<template id="e0-template">
   <my-content id="0">
     <h3 slot="title">Second</h3>
     <my-content id="1">
@@ -556,12 +556,12 @@ test('fill nested rendered slots', t=> {
 <html>
 <head></head>
 <body>
-<my-list-container items="" id="✨0">
+<my-list-container items="" id="e0">
   <h2>My List Container</h2>
   <span slot="title">
     YOLO
   </span>
-  <my-list items="" id="✨1">
+  <my-list items="" id="e1">
     <h4 slot="title">Content List</h4>
     <ul>
       <li>one</li>
@@ -610,10 +610,10 @@ test('fill nested rendered slots', t=> {
   <ul>
   </ul>
 </template>
-<template id="✨0-template">
+<template id="e0-template">
   <span slot="title">YOLO</span>
 </template>
-<template id="✨1-template">
+<template id="e1-template">
   <h4 slot="title">
     Content List
   </h4>

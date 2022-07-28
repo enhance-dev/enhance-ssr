@@ -13,7 +13,7 @@ export default function Enhancer(options={}) {
 
   let count = 0
   function getID() {
-    return `✨${count++}`.toString(16)
+    return `e${count++}`.toString(16)
   }
 
   function processCustomElements(node, elements, store, styleTransforms) {
@@ -22,12 +22,14 @@ export default function Enhancer(options={}) {
     const find = (node) => {
       for (const child of node.childNodes) {
         if (isCustomElement(child.tagName)) {
+          let instanceID = getID()
           if (child.childNodes.length) {
             let id = child.attrs.find(attr => attr.name === 'id')?.value
             if(!id) {
-              id = getID()
+              id = instanceID
               child.attrs.push({ name: 'id', value: id })
             }
+            store.instanceID = instanceID
             const frag = fragment('')
             frag.childNodes = [...child.childNodes]
             authoredTemplates.push(template({ name: id, fragment: frag }))
@@ -346,10 +348,7 @@ function applyTransforms({ fragment, name, scriptTransforms, styleTransforms }) 
     })
   }
   prune.forEach((i) => fragment.childNodes.splice(fragment.childNodes.indexOf(styleNodes[i]), 1) )
-
-
   scriptNodes.forEach(s => fragment.childNodes.splice(fragment.childNodes.indexOf(s), 1))
-
   return {
     transformedFragment: fragment,
     scriptNodes,

@@ -327,10 +327,12 @@ function applyTransforms({ fragment, name, scriptTransforms, styleTransforms }) 
   const scriptNodes = fragment.childNodes.filter(n => n.nodeName === 'script')
   const styleNodes = fragment.childNodes.filter(n => n.nodeName === 'style')
 
-  if (scriptNodes.length && scriptNodes?.childNodes?.length && scriptTransforms.length) {
+  if (scriptNodes.length && scriptTransforms.length) {
     scriptNodes.forEach((s) => {
-      const scriptNode = applyScriptTransforms({ node: s, scriptTransforms, tagName: name })
-      s.childNodes[0].value = scriptNode.childNodes[0].value
+        const scriptNode = applyScriptTransforms({ node: s, scriptTransforms, tagName: name })
+      if (scriptNode && scriptNode.childNodes.length) {
+        s.childNodes[0].value = scriptNode.childNodes[0].value
+      }
     })
   }
 

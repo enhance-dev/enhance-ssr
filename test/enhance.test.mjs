@@ -968,7 +968,7 @@ test('should respect as attribute', t => {
   t.end()
 })
 
-test.only('should enable external script src', t => {
+test('should enable external script src', t => {
   const html = enhance({
     elements: {
       'my-external-script': MyExternalScript

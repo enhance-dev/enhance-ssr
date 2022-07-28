@@ -129,7 +129,7 @@ function renderTemplate({ name, elements, attrs=[], store={} }) {
     return fragment(template({ html: render, state }))
   }
   else {
-    console.warn(`Issue rendering template for ${name}.\n${err.message}`)
+    console.warn(`Issue rendering template for ${name}.\n`)
   }
 }
 

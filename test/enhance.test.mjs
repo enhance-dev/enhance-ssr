@@ -15,6 +15,7 @@ import MyUnnamed from './fixtures/templates/my-unnamed.mjs'
 import MyTransformScript from './fixtures/templates/my-transform-script.mjs'
 import MyTransformStyle from './fixtures/templates/my-transform-style.mjs'
 import MySlotAs from './fixtures/templates/my-slot-as.mjs'
+import MyExternalScript from './fixtures/templates/my-external-script.mjs'
 
 function Head() {
   return `
@@ -966,3 +967,39 @@ test('should respect as attribute', t => {
   t.equal(strip(actual), strip(expected), 'respects as attribute')
   t.end()
 })
+
+test.only('should enable external script src', t => {
+  const html = enhance({
+    elements: {
+      'my-external-script': MyExternalScript
+    },
+    scriptTransforms: [
+      function({ attrs, raw, tagName }) {
+        return `${raw}\n${tagName}`
+      }
+    ]
+  })
+  const actual = html`
+  ${Head()}
+  <my-external-script></my-external-script>
+  `
+  const expected = `
+<!DOCTYPE html>
+<html>
+<head>
+</head>
+<body>
+  <my-external-script>
+    <input type="range">
+  </my-external-script>
+  <script src="_static/range.mjs"></script>
+  <template id="my-external-script-template">
+    <input type="range">
+  </template>
+</body>
+</html>
+  `
+  t.equal(strip(actual), strip(expected), 'enables script src')
+  t.end()
+})
+

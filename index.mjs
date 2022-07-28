@@ -299,13 +299,15 @@ function replaceSlots(node, slots) {
 
 function applyScriptTransforms({ node, scriptTransforms, tagName }) {
   const attrs = node?.attrs || []
-  const raw = node.childNodes[0].value
-  let out = raw
-  scriptTransforms.forEach(transform => {
-    out = transform({ attrs, raw: out, tagName })
-  })
-  if (!out.length) return
-  node.childNodes[0].value = out
+  if (node.childNodes.length) {
+    const raw = node.childNodes[0].value
+    let out = raw
+    scriptTransforms.forEach(transform => {
+      out = transform({ attrs, raw: out, tagName })
+    })
+    if (!out.length) return
+    node.childNodes[0].value = out
+  }
   return node
 }
 
@@ -325,7 +327,7 @@ function applyTransforms({ fragment, name, scriptTransforms, styleTransforms }) 
   const scriptNodes = fragment.childNodes.filter(n => n.nodeName === 'script')
   const styleNodes = fragment.childNodes.filter(n => n.nodeName === 'style')
 
-  if (scriptNodes.length && scriptTransforms.length) {
+  if (scriptNodes.length && scriptNodes?.childNodes?.length && scriptTransforms.length) {
     scriptNodes.forEach((s) => {
       const scriptNode = applyScriptTransforms({ node: s, scriptTransforms, tagName: name })
       s.childNodes[0].value = scriptNode.childNodes[0].value

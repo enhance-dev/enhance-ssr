@@ -33,23 +33,6 @@ export default function HelloWorld({ html, state }) {
     </style>
 
     <h1>${greeting}</h1>
-
-    <script type=module>
-      class HelloWorld extends HTMLElement {
-        constructor () {
-          super()
-          const template = document.getElementById('hello-world-template')
-          this.attachShadow({ mode: 'open' })
-            .appendChild(template.content.cloneNode(true))
-        }
-
-        connectedCallback () {
-          console.log('Why hello there 👋')
-        }
-      }
-
-      customElements.define('hello-world', HelloWorld)
-    </script>
   `
 }
 ```
@@ -66,69 +49,7 @@ The template added to the server rendered HTML page
 </head>
 
 <body>
-
-<script type="module">
-  class HelloWorld extends HTMLElement {
-    constructor () {
-      super()
-      const template = document.getElementById('hello-world-template')
-      this.attachShadow({ mode: 'open' })
-        .appendChild(template.content.cloneNode(true))
-    }
-
-    connectedCallback () {
-      console.log('Why hello there 👋')
-    }
-  }
-
-  customElements.define('hello-world', HelloWorld)
-</script>
-
-<template id="hello-world-template">
   <h1>Hello World</h1>
-</template>
-
-</body>
-```
-
-If you author slotted elements they will be added to a template keyed by the custom element's id. If no id is authored one will be added during server side render.
-You can extend `@enhance/base-element` to manage progressive enhancement of your custom element and cut down on boilerplate for your Web Component.
-
-```javascript
-// Output
-<head>
-  <style scope="global">
-    h1 {
-      color: red;
-    }
-  </style>
-</head>
-<body>
-<hello-world>
-  <h1 slot="salutation">
-    Whattap!
-  </h1>
-</hello-world>
-
-<script type="module">
-  class HelloWorld extends BaseElement {
-    constructor () {
-      super()
-    }
-
-    connectedCallback () {
-      console.log('Why hello there 👋')
-    }
-  }
-
-  customElements.define('hello-world', HelloWorld)
-</script>
-
-<template id="hello-world-template">
-  <slot name="salutation">
-    <h1>Hello World</h1>
-  </slot>
-</template>
 </body>
 ```
 
@@ -145,9 +66,8 @@ const html = enhance({
 })
 console.log(html`<my-store-data app-index="0" user-index="1"></my-store-data>`)
 ```
-### Template
+### Element template
 ```javascript
-// Template
 export default function MyStoreData({ html, state }) {
   const { attrs, store } = state
   const appIndex = attrs['app-index']
@@ -161,7 +81,7 @@ export default function MyStoreData({ html, state }) {
   `
 }
 ```
-Attribute state can be used to pass default state to the backing Web Component. 
+Attribute state can be used to pass default state to the backing Web Component.
 Store is used to pass previously stored data, in an easy to access way, to all components in the tree.
 
 ### Slots
@@ -185,7 +105,8 @@ You can override the default text by adding a slot attribute with a value that m
 ```
 
 #### Unnamed slots
-Enhance supports unnamed slots for when you want to create a container element that will exposes it's content from the Shadow DOM.
+Enhance supports unnamed slots for when you want to create a container element for all non-slotted child nodes.
+*per the spec default content is not supported in slots
 ```javascript
 export default function MyParagraph({ html }) {
   return html`

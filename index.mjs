@@ -13,26 +13,25 @@ export default function Enhancer(options={}) {
 
   let count = 0
   function getID() {
-    return `✨${count++}`.toString(16)
+    return `e${count++}`.toString(16)
   }
 
-  function processCustomElements(node, elements, store, styleTransforms) {
-    const authoredTemplates = []
+  function processCustomElements(node, elements, store, styleTransforms, scriptTransforms) {
     const collectedStyles = []
+    let collectedScripts = []
     const find = (node) => {
       for (const child of node.childNodes) {
         if (isCustomElement(child.tagName)) {
           if (child.childNodes.length) {
-            let id = child.attrs.find(attr => attr.name === 'id')?.value
-            if(!id) {
-              id = getID()
-              child.attrs.push({ name: 'id', value: id })
-            }
             const frag = fragment('')
             frag.childNodes = [...child.childNodes]
-            authoredTemplates.push(template({ name: id, fragment: frag }))
           }
-          const { frag:expandedTemplate, styles:stylesToCollect } = expandTemplate(child, elements, store, styleTransforms)
+          const {
+            frag:expandedTemplate,
+            styles:stylesToCollect,
+            scripts:scriptsToCollect
+          } = expandTemplate(child, elements, store, styleTransforms, scriptTransforms, collectedScripts)
+          collectedScripts = scriptsToCollect
           collectedStyles.push(stylesToCollect)
           fillSlots(child, expandedTemplate)
         }
@@ -40,9 +39,10 @@ export default function Enhancer(options={}) {
       }
     }
     find(node)
+
     return {
-      authoredTemplates,
-      collectedStyles
+      collectedStyles,
+      collectedScripts
     }
   }
 
@@ -51,22 +51,13 @@ export default function Enhancer(options={}) {
     const html = doc.childNodes.find(node => node.tagName === 'html')
     const body = html.childNodes.find(node => node.tagName === 'body')
     const head = html.childNodes.find(node => node.tagName === 'head')
-    const { authoredTemplates, collectedStyles } = processCustomElements(body, elements, store, styleTransforms)
-    const templateNames = Object.keys(elements)
-    const templates = fragment(templateNames
-      .map(name => {
-        const renderedFragment = renderTemplate({ name, elements, store })
-        const { scriptNodes, transformedFragment }  = applyTransforms({
-          fragment: renderedFragment,
-          scriptTransforms,
-          styleTransforms,
-          name
-        })
-        appendNodes(body, scriptNodes)
-        return template({ fragment: transformedFragment, name})
-      }).join('')
-    )
-
+    const {
+      collectedStyles,
+      collectedScripts
+    } = processCustomElements(body, elements, store, styleTransforms, scriptTransforms)
+    if (Object.keys(collectedScripts).length) {
+      appendNodes(body, Object.values(collectedScripts))
+    }
     if (collectedStyles.length) {
       const uniqueStyles = collectedStyles.flat().reduce((acc, style) => {
         if (style?.childNodes?.[0]?.value) return { ...acc, [style.childNodes[0].value]: '' };
@@ -80,11 +71,6 @@ export default function Enhancer(options={}) {
       }
     }
 
-    appendChildNodes(body, templates)
-    if (authoredTemplates) {
-      const ats = fragment(authoredTemplates.join(''))
-      appendChildNodes(body, ats)
-    }
     return serialize(doc).replace(/__b_\d+/g, '')
   }
 }
@@ -99,7 +85,7 @@ function render(strings, ...values) {
 }
 
 
-function expandTemplate(node, elements, store, styleTransforms) {
+function expandTemplate(node, elements, store, styleTransforms, scriptTransforms, scripts=[]) {
   const tagName = node.tagName
   const frag = renderTemplate({
     name: node.tagName,
@@ -111,6 +97,12 @@ function expandTemplate(node, elements, store, styleTransforms) {
   for (const node of frag.childNodes) {
     if (node.nodeName === 'script') {
       frag.childNodes.splice(frag.childNodes.indexOf(node), 1)
+      if (!scripts[tagName]) {
+        const transformedScript = applyScriptTransforms({ node, scriptTransforms, tagName })
+        if (transformedScript) {
+          scripts[tagName] = transformedScript
+        }
+      }
     }
     if (node.nodeName === 'style') {
       frag.childNodes.splice(frag.childNodes.indexOf(node), 1)
@@ -118,7 +110,7 @@ function expandTemplate(node, elements, store, styleTransforms) {
       if (transformedStyle) { styles.push(transformedStyle) }
     }
   }
-  return { frag, styles }
+  return { frag, styles, scripts }
 }
 
 function renderTemplate({ name, elements, attrs=[], store={} }) {
@@ -305,8 +297,9 @@ function applyScriptTransforms({ node, scriptTransforms, tagName }) {
     scriptTransforms.forEach(transform => {
       out = transform({ attrs, raw: out, tagName })
     })
-    if (!out.length) return
-    node.childNodes[0].value = out
+    if (out.length) {
+      node.childNodes[0].value = out
+    }
   }
   return node
 }
@@ -346,22 +339,12 @@ function applyTransforms({ fragment, name, scriptTransforms, styleTransforms }) 
     })
   }
   prune.forEach((i) => fragment.childNodes.splice(fragment.childNodes.indexOf(styleNodes[i]), 1) )
-
-
   scriptNodes.forEach(s => fragment.childNodes.splice(fragment.childNodes.indexOf(s), 1))
 
   return {
     transformedFragment: fragment,
     scriptNodes,
   }
-}
-
-function template({ fragment, name }) {
-  return `
-<template id="${name}-template">
-  ${serialize(fragment)}
-</template>
-  `
 }
 
 function appendChildNodes(target, node) {

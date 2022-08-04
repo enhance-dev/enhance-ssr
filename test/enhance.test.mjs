@@ -72,13 +72,6 @@ test('expand template', t => {
     }
   }
 </script>
-<template id="my-paragraph-template">
-  <p>
-    <slot name="my-text">
-      My default text
-    </slot>
-  </p>
-</template>
 </body>
 </html>
 `
@@ -110,12 +103,6 @@ test('Passing state through multiple levels', t=> {
   <my-pre-page items=""><my-pre items="">
   <pre>test</pre>
   </my-pre></my-pre-page>
-  <template id="my-pre-page-template">
-    <my-pre items=""></my-pre>
-  </template>
-  <template id="my-pre-template">
-    <pre></pre>
-  </template>
 </body>
 </html>
 `
@@ -151,14 +138,6 @@ test('should wrap children with no root node in a div tag with slot name', t=> {
     <code> a code block</code>
   </div>
 </my-multiples>
-<template id="my-multiples-template">
-  <slot name="my-content">
-    My default text
-    <h3>A smaller heading</h3>
-    Random text
-    <code> a code block</code>
-  </slot>
-</template>
 </body>
 </html>
 `
@@ -182,27 +161,16 @@ test('should not duplicate slotted elements', t=> {
 ${Head()}
 <my-outline>
   <div slot="toc" class="toc">things</div>
-</my-outline>
- `
+</my-outline>`
  const expected = `
 <!DOCTYPE html>
 <html>
 <head>
 </head>
 <body>
-
-  <my-outline id="✨0">
+  <my-outline>
     <div slot="toc" class="toc">things</div>
   </my-outline>
-
-<template id="my-outline-template">
-    <slot name="toc" class="toc"></slot>
-</template>
-
-<template id="✨0-template">
-  <div slot="toc" class="toc">things</div>
-</template>
-
 </body>
 </html>
     `
@@ -246,16 +214,6 @@ ${Head()}
     }
   }
 </script>
-<template id="my-paragraph-template">
-  <p>
-    <slot name="my-text">
-      My default text
-    </slot>
-  </p>
-</template>
-<template id="0-template">
-  <span slot="my-text">Slotted</span>
-</template>
 </body>
 </html>
 `
@@ -284,9 +242,6 @@ test('should not render default content in unnamed slots', t=> {
 <head></head>
 <body>
 <my-unnamed id="0"></my-unnamed>
-<template id="my-unnamed-template">
-  <slot>This should not render</slot>
-</template>
 </body>
 </html>
 `
@@ -330,18 +285,6 @@ test('add authored children to unnamed slot', t=> {
     }
   }
 </script>
-<template id="my-content-template">
-  <h2>My Content</h2>
-  <slot name="title">
-    <h3>
-      Title
-    </h3>
-  </slot>
-  <slot></slot>
-</template>
-<template id="0-template">
-  <h4 slot="title">Custom title</h4>
-</template>
 </body>
 </html>
 `
@@ -382,9 +325,6 @@ ${Head()}
     }
   }
 </script>
-<template id="my-link-template">
-  <a href=""></a>
-</template>
 </body>
 </html>
 `
@@ -432,13 +372,6 @@ test('pass attribute array values correctly', t => {
     }
   }
 </script>
-<template id="my-list-template">
-  <slot name="title">
-    <h4>My list</h4>
-  </slot>
-  <ul>
-  </ul>
-</template>
 </body>
 </html>
   `
@@ -474,7 +407,7 @@ test('should update deeply nested slots', t=> {
 <html>
 <head></head>
 <body>
-  <my-content id="✨0">
+  <my-content>
     <h2>My Content</h2>
     <h3 slot="title">
       Title
@@ -499,32 +432,6 @@ test('should update deeply nested slots', t=> {
     }
   }
 </script>
-<template id="my-content-template">
-  <h2>My Content</h2>
-  <slot name="title">
-    <h3>
-      Title
-    </h3>
-  </slot>
-  <slot></slot>
-</template>
-<template id="✨0-template">
-  <my-content id="0">
-    <h3 slot="title">Second</h3>
-    <my-content id="1">
-      <h3 slot="title">Third</h3>
-    </my-content>
-  </my-content>
-</template>
-<template id="0-template">
-  <h3 slot="title">Second</h3>
-  <my-content id="1">
-    <h3 slot="title">Third</h3>
-  </my-content>
-</template>
-<template id="1-template">
-  <h3 slot="title">Third</h3>
-</template>
 </body>
 </html>
 `
@@ -556,12 +463,12 @@ test('fill nested rendered slots', t=> {
 <html>
 <head></head>
 <body>
-<my-list-container items="" id="✨0">
+<my-list-container items="">
   <h2>My List Container</h2>
   <span slot="title">
     YOLO
   </span>
-  <my-list items="" id="✨1">
+  <my-list items="">
     <h4 slot="title">Content List</h4>
     <ul>
       <li>one</li>
@@ -592,32 +499,6 @@ test('fill nested rendered slots', t=> {
     }
   }
 </script>
-<template id="my-list-container-template">
-  <h2>My List Container</h2>
-  <slot name="title">
-    <h3>
-      Title
-    </h3>
-  </slot>
-  <my-list items="">
-    <h4 slot="title">Content List</h4>
-  </my-list>
-</template>
-<template id="my-list-template">
-  <slot name="title">
-    <h4>My list</h4>
-  </slot>
-  <ul>
-  </ul>
-</template>
-<template id="✨0-template">
-  <span slot="title">YOLO</span>
-</template>
-<template id="✨1-template">
-  <h4 slot="title">
-    Content List
-  </h4>
-</template>
 </body>
 </html>
 `
@@ -657,9 +538,6 @@ test('should allow supplying custom head tag', t=> {
 </head>
 <body>
 <my-counter count="3"><h3>Count: 3</h3></my-counter>
-<template id="my-counter-template">
-<h3>Count: 0</h3>
-</template>
 </body>
 </html>
   `
@@ -716,12 +594,6 @@ test('should pass store to template', t => {
     <h1>2</h1>
   </div>
 </my-store-data>
-<template id="my-store-data-template">
-  <div>
-    <h1></h1>
-    <h1></h1>
-  </div>
-</template>
 </body>
 </html>
   `
@@ -762,9 +634,6 @@ test('should run script transforms', t => {
   customElements.define('my-transform-script', MyTransformScript)
   my-transform-script
 </script>
-<template id="my-transform-script-template">
-<h1>My Transform Script</h1>
-</template>
 </body>
 </html>
   `
@@ -832,18 +701,6 @@ test('should run style transforms', t => {
   }
   customElements.define('my-transform-style', MyTransformStyle)
 </script>
-<template id="my-transform-style-template">
-<style>
-  :slot {
-    display: inline-block;
-  }
-  /*
-  my-transform-style styles
-  context: template
-  */
-</style>
-<h1>My Transform Style</h1>
-</template>
 </body>
 </html>
   `
@@ -915,18 +772,6 @@ test('should not add duplicated style tags to head', t => {
   }
   customElements.define('my-transform-style', MyTransformStyle)
 </script>
-<template id="my-transform-style-template">
-<style>
-  :slot {
-    display: inline-block;
-  }
-  /*
-  my-transform-style styles
-  context: template
-  */
-</style>
-<h1>My Transform Style</h1>
-</template>
 </body>
 </html>
   `
@@ -956,11 +801,6 @@ test('should respect as attribute', t => {
       stuff
     </div>
   </my-slot-as>
-  <template id="my-slot-as-template">
-    <slot as="div" name="stuff">
-      stuff
-    </slot>
-  </template>
 </body>
 </html>
   `
@@ -993,9 +833,6 @@ test('should enable external script src', t => {
     <input type="range">
   </my-external-script>
   <script src="_static/range.mjs"></script>
-  <template id="my-external-script-template">
-    <input type="range">
-  </template>
 </body>
 </html>
   `

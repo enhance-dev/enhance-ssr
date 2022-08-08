@@ -116,7 +116,11 @@ function expandTemplate(node, elements, store, styleTransforms, scriptTransforms
 function renderTemplate({ name, elements, attrs=[], store={} }) {
   attrs = attrs ? attrsToState(attrs) : {}
   const state = { attrs, store }
-  const template = elements[name]
+  const templateHasRenderFunction = elements[name].render
+  const template = templateHasRenderFunction
+    ? elements[name].render
+    : elements[name]
+
   if (template) {
     return fragment(template({ html: render, state }))
   }

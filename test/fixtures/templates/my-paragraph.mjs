@@ -1,20 +1,19 @@
-export default function MyParagraph({ html }) {
-  return html`
-<p>
-  <slot name="my-text">
-    My default text
-  </slot>
-</p>
-<script type=module>
-  class MyParagraph extends HTMLElement {
-    constructor() {
-      super()
-    }
-
-    connectedCallback() {
-      console.log('My Paragraph')
-    }
+const MyParagraph = {
+  init() {
+    this.addEventListener('click', this.click)
+  },
+  click(e) {
+    console.log('E: ', e)
+  },
+  render({ html }) {
+    return html`
+  <p>
+    <slot name="my-text">
+      My default text
+    </slot>
+  </p>
+  `
   }
-</script>
-`
 }
+
+export default MyParagraph

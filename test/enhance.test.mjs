@@ -61,17 +61,6 @@ test('expand template', t => {
 <my-paragraph>
   <p><span slot="my-text">My default text</span></p>
 </my-paragraph>
-<script type="module">
-  class MyParagraph extends HTMLElement {
-    constructor() {
-      super()
-    }
-
-    connectedCallback() {
-      console.log('My Paragraph')
-    }
-  }
-</script>
 </body>
 </html>
 `
@@ -203,17 +192,6 @@ ${Head()}
 <my-paragraph id="0">
   <p><span slot="my-text">Slotted</span></p>
 </my-paragraph>
-<script type="module">
-  class MyParagraph extends HTMLElement {
-    constructor() {
-      super()
-    }
-
-    connectedCallback() {
-      console.log('My Paragraph')
-    }
-  }
-</script>
 </body>
 </html>
 `

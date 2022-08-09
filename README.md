@@ -54,6 +54,42 @@ The template added to the server rendered HTML page
 ```
 
 Supply initital state to enhance and it will be passed along in a `store` object nested inside the state object.
+
+### Render function
+You can also use an object that exposes a `render` function as your template. The render function will be passed the same arguments `{ html:function, state:object }`.
+
+```javascript
+{
+  attrs: [ 'label' ],
+  init(el) {
+    el.addEventListener('click', el.click)
+  },
+  render({ html, state }) {
+    const { attrs={} } = state
+    const { label='Nope' } = attrs
+    return html`
+    <pre>
+      ${JSON.stringify(state)}
+    </pre>
+    <button>${ label }</button>
+    `
+  },
+  click(e) {
+    console.log('CLICKED')
+  },
+  adopted() {
+    console.log('ADOPTED')
+  },
+  connected() {
+    console.log('CONNECTED')
+  },
+  disconnected() {
+    console.log('DISCONNECTED')
+  }
+}
+```
+> Use these options objects with the [enhance custom element factory](https://github.com/enhance-dev/enhance)
+
 #### Node
 ```javascript
 import MyStoreData from './path/to/elements/my-store-data.mjs'

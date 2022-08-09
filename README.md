@@ -125,7 +125,7 @@ export default function MyParagraph({ html }) {
 
 
 ### Transforms
-Enhance supports the inclusion of script and style transform functions. You add a function to the array of `scriptTransforms` and/or `styleTransforms` and are able to transform the contents however you wish, just return the your desired output.
+Enhance supports the inclusion of script and style transform functions. You add a function to the array of `scriptTransforms` and/or `styleTransforms` and are able to transform the contents however you wish, just return your desired output.
 
 ```javaScript
 import enhance from '@enhance/ssr'

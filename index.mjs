@@ -59,7 +59,12 @@ export default function Enhancer(options={}) {
       const uniqueScripts = collectedScripts.flat().reduce((acc, script) => {
         const scriptSrc = script?.attrs?.map(a => a.name === 'src' ? a.value : false )[0]
         const scriptContents = script?.childNodes?.[0]?.value
-        if (scriptContents || scriptSrc) return { ...acc, [scriptContents || scriptSrc]: script };
+        if (scriptContents || scriptSrc) {
+          return {
+            ...acc,
+            [scriptContents || scriptSrc]: script
+          }
+        }
         return {...acc}
       }, {})
 
@@ -67,7 +72,9 @@ export default function Enhancer(options={}) {
     }
     if (collectedStyles.length) {
       const uniqueStyles = collectedStyles.flat().reduce((acc, style) => {
-        if (style?.childNodes?.[0]?.value) return { ...acc, [style.childNodes[0].value]: '' };
+        if (style?.childNodes?.[0]?.value) {
+          return { ...acc, [style.childNodes[0].value]: '' }
+        }
         return {...acc}
       }, { })
       const mergedCssString  = Object.keys(uniqueStyles).join('\n')

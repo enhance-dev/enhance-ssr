@@ -580,7 +580,7 @@ test('should pass store to template', t => {
   t.end()
 })
 
-test('should run script transforms', t => {
+test('should run script transforms and add only one script per custom element', t => {
   const html = enhance({
     elements: {
       'my-transform-script': MyTransformScript
@@ -594,12 +594,16 @@ test('should run script transforms', t => {
   const actual = html`
   ${Head()}
   <my-transform-script></my-transform-script>
+  <my-transform-script></my-transform-script>
   `
   const expected = `
 <!DOCTYPE html>
 <html>
 <head></head>
 <body>
+<my-transform-script>
+  <h1>My Transform Script</h1>
+</my-transform-script>
 <my-transform-script>
   <h1>My Transform Script</h1>
 </my-transform-script>
@@ -616,7 +620,7 @@ test('should run script transforms', t => {
 </html>
   `
 
-  t.equal(strip(actual), strip(expected), 'ran script transform script')
+  t.equal(strip(actual), strip(expected), 'ran script transforms')
   t.end()
 })
 
@@ -786,7 +790,7 @@ test('should respect as attribute', t => {
   t.end()
 })
 
-test('should enable external script src', t => {
+test('should add multiple external scripts', t => {
   const html = enhance({
     elements: {
       'my-external-script': MyExternalScript
@@ -800,6 +804,7 @@ test('should enable external script src', t => {
   const actual = html`
   ${Head()}
   <my-external-script></my-external-script>
+  <my-external-script></my-external-script>
   `
   const expected = `
 <!DOCTYPE html>
@@ -810,11 +815,15 @@ test('should enable external script src', t => {
   <my-external-script>
     <input type="range">
   </my-external-script>
+  <my-external-script>
+    <input type="range">
+  </my-external-script>
   <script src="_static/range.mjs"></script>
+  <script src="_static/another.mjs"></script>
 </body>
 </html>
   `
-  t.equal(strip(actual), strip(expected), 'enables script src')
+  t.equal(strip(actual), strip(expected), 'Adds multiple external scripts')
   t.end()
 })
 

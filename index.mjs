@@ -31,7 +31,7 @@ export default function Enhancer(options={}) {
             styles:stylesToCollect,
             scripts:scriptsToCollect
           } = expandTemplate(child, elements, store, styleTransforms, scriptTransforms, collectedScripts)
-          collectedScripts = scriptsToCollect
+          collectedScripts.push(scriptsToCollect)
           collectedStyles.push(stylesToCollect)
           fillSlots(child, expandedTemplate)
         }
@@ -55,8 +55,15 @@ export default function Enhancer(options={}) {
       collectedStyles,
       collectedScripts
     } = processCustomElements(body, elements, store, styleTransforms, scriptTransforms)
-    if (Object.keys(collectedScripts).length) {
-      appendNodes(body, Object.values(collectedScripts))
+    if (collectedScripts.length) {
+      const uniqueScripts = collectedScripts.flat().reduce((acc, script) => {
+        const scriptSrc = script?.attrs?.map(a => a.name === 'src' ? a.value : false )[0]
+        const scriptContents = script?.childNodes?.[0]?.value
+        if (scriptContents || scriptSrc) return { ...acc, [scriptContents || scriptSrc]: script };
+        return {...acc}
+      }, {})
+
+      appendNodes(body, Object.values(uniqueScripts))
     }
     if (collectedStyles.length) {
       const uniqueStyles = collectedStyles.flat().reduce((acc, style) => {
@@ -85,7 +92,7 @@ function render(strings, ...values) {
 }
 
 
-function expandTemplate(node, elements, store, styleTransforms, scriptTransforms, scripts=[]) {
+function expandTemplate(node, elements, store, styleTransforms, scriptTransforms) {
   const tagName = node.tagName
   const frag = renderTemplate({
     name: node.tagName,
@@ -94,14 +101,13 @@ function expandTemplate(node, elements, store, styleTransforms, scriptTransforms
     store
   }) || ''
   let styles= []
+  let scripts = []
   for (const node of frag.childNodes) {
     if (node.nodeName === 'script') {
       frag.childNodes.splice(frag.childNodes.indexOf(node), 1)
-      if (!scripts[tagName]) {
-        const transformedScript = applyScriptTransforms({ node, scriptTransforms, tagName })
-        if (transformedScript) {
-          scripts[tagName] = transformedScript
-        }
+      const transformedScript = applyScriptTransforms({ node, scriptTransforms, tagName })
+      if (transformedScript) {
+        scripts.push(transformedScript)
       }
     }
     if (node.nodeName === 'style') {

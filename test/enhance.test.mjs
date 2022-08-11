@@ -818,7 +818,7 @@ test('should add multiple external scripts', t => {
   <my-external-script>
     <input type="range">
   </my-external-script>
-  <script src="_static/range.mjs"></script>
+  <script type="module" src="_static/range.mjs"></script>
   <script src="_static/another.mjs"></script>
 </body>
 </html>

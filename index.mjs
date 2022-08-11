@@ -57,12 +57,13 @@ export default function Enhancer(options={}) {
     } = processCustomElements(body, elements, store, styleTransforms, scriptTransforms)
     if (collectedScripts.length) {
       const uniqueScripts = collectedScripts.flat().reduce((acc, script) => {
-        const scriptSrc = script?.attrs?.map(a => a.name === 'src' ? a.value : false )[0]
+        const scriptSrc = script?.attrs?.find(a => a.name === 'src')
+        const scriptSrcValue = scriptSrc?.value
         const scriptContents = script?.childNodes?.[0]?.value
         if (scriptContents || scriptSrc) {
           return {
             ...acc,
-            [scriptContents || scriptSrc]: script
+            [scriptContents || scriptSrcValue]: script
           }
         }
         return {...acc}

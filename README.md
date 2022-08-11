@@ -20,7 +20,7 @@ const html = enhance({
 console.log(html`<hello-world greeting="Well hi!"></hello-world>`)
 ```
 ### An example custom element template for use in Server Side Rendering
-Attributes added to the custom element in your markup will be passed in the `attrs` object nested in the passed `state` object.
+Elements are pure functions that are passed an object containing an `html` function used to expand custom elements and a state object comprised of `attrs` which are the attributes set on the custom element and a `store` object that contains application state.
 ```javascript
 export default function HelloWorld({ html, state }) {
   const { attrs } = state
@@ -37,9 +37,8 @@ export default function HelloWorld({ html, state }) {
 }
 ```
 
-The template added to the server rendered HTML page
+The rendered output
 ```javascript
-// Output
 <head>
   <style scope="global">
     h1 {
@@ -49,11 +48,11 @@ The template added to the server rendered HTML page
 </head>
 
 <body>
+<hello-world>
   <h1>Hello World</h1>
+</hello-world>
 </body>
 ```
-
-Supply initital state to enhance and it will be passed along in a `store` object nested inside the state object.
 
 ### Render function
 You can also use an object that exposes a `render` function as your template. The render function will be passed the same arguments `{ html:function, state:object }`.
@@ -90,6 +89,9 @@ You can also use an object that exposes a `render` function as your template. Th
 ```
 > Use these options objects with the [enhance custom element factory](https://github.com/enhance-dev/enhance)
 
+### Store
+Supply initital state to enhance and it will be passed along in a `store` object nested inside the state object.
+
 #### Node
 ```javascript
 import MyStoreData from './path/to/elements/my-store-data.mjs'
@@ -117,8 +119,7 @@ export default function MyStoreData({ html, state }) {
   `
 }
 ```
-Attribute state can be used to pass default state to the backing Web Component.
-Store is used to pass previously stored data, in an easy to access way, to all components in the tree.
+The store is used to pass state to all components in the tree.
 
 ### Slots
 Enhance supports the use of [`slots` in your custom element templates](https://developer.mozilla.org/en-US/docs/Web/Web_Components/Using_templates_and_slots).
@@ -158,7 +159,6 @@ export default function MyParagraph({ html }) {
   This will render <strong>all</strong> authored children.
 </my-paragraph>
 ```
-
 
 ### Transforms
 Enhance supports the inclusion of script and style transform functions. You add a function to the array of `scriptTransforms` and/or `styleTransforms` and are able to transform the contents however you wish, just return your desired output.

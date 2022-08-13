@@ -281,8 +281,8 @@ function replaceSlots(node, slots) {
       else if (slotChildren.length > 1) {
          // Has multiple children
          const wrapperDiv = {
-          nodeName: asTag ? asTag : 'div',
-          tagName: asTag ? asTag : 'div',
+          nodeName: asTag ? asTag : 'span',
+          tagName: asTag ? asTag : 'span',
           attrs: [{ value, name }],
           namespaceURI: 'http://www.w3.org/1999/xhtml',
           childNodes: []

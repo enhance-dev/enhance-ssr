@@ -104,7 +104,7 @@ test('Passing state through multiple levels', t=> {
   t.end()
 })
 
-test('should wrap children with no root node in a div tag with slot name', t=> {
+test('should render as div tag with slot name', t=> {
   const html = enhance({
     elements: {
       'my-multiples': MyMultiples
@@ -134,7 +134,7 @@ test('should wrap children with no root node in a div tag with slot name', t=> {
   t.equal(
     strip(actual),
     strip(expected),
-    'Whew it wraps a multiple slot children with no root node in a div tag with the slot name added'
+    'Whew it renders slot as div tag with the slot name added'
   )
   t.end()
 })

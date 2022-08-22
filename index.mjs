@@ -194,6 +194,8 @@ function fillSlots(node, template) {
       const children = node.childNodes
         .filter(n => !inserts.includes(n))
       const slotParentChildNodes = slot.parentNode.childNodes
+      const slotIndex =  slotParentChildNodes
+          .indexOf(slot)
       slotParentChildNodes.splice(
         slotParentChildNodes
           .indexOf(slot),
@@ -295,14 +297,15 @@ function replaceSlots(node, slots) {
       else {
         slotChildren[0].attrs.push({ value, name })
       }
+
+      const slotParentChildNodes = slot.parentNode.childNodes
+      slotParentChildNodes.splice(
+        slotParentChildNodes
+          .indexOf(slot),
+        1,
+        ...slot.childNodes
+      )
     }
-    const slotParentChildNodes = slot.parentNode.childNodes
-    slotParentChildNodes.splice(
-      slotParentChildNodes
-        .indexOf(slot),
-      1,
-      ...slot.childNodes
-    )
   })
   return node
 }

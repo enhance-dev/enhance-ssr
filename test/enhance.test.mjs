@@ -219,7 +219,7 @@ test('should not render default content in unnamed slots', t=> {
 <html>
 <head></head>
 <body>
-<my-unnamed id="0"></my-unnamed>
+  <my-unnamed id="0"></my-unnamed>
 </body>
 </html>
 `
@@ -824,6 +824,34 @@ test('should add multiple external scripts', t => {
 </html>
   `
   t.equal(strip(actual), strip(expected), 'Adds multiple external scripts')
+  t.end()
+})
+
+test('should support unnamed slot without whitespace', t=> {
+  const html = enhance({
+    elements: {
+      'my-unnamed': MyUnnamed
+    }
+  })
+  const actual = html`
+  ${Head()}
+  <my-unnamed>My Text</my-unnamed>
+  `
+  const expected = `
+<!DOCTYPE html>
+<html>
+<head></head>
+<body>
+  <my-unnamed>My Text</my-unnamed>
+</body>
+</html>
+`
+
+  t.equal(
+    strip(actual),
+    strip(expected),
+    'Renders content without whitepace into unnamed slot'
+  )
   t.end()
 })
 

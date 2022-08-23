@@ -254,17 +254,6 @@ test('add authored children to unnamed slot', t=> {
   <h2>My Content</h2>
   <h4 slot="title">Custom title</h4>
 </my-content>
-<script type="module">
-  class MyContent extends HTMLElement {
-    constructor() {
-      super()
-    }
-
-    connectedCallback() {
-      console.log('My Content')
-    }
-  }
-</script>
 </body>
 </html>
 `
@@ -401,17 +390,6 @@ test('should update deeply nested slots', t=> {
       </my-content>
     </my-content>
   </my-content>
-<script type="module">
-  class MyContent extends HTMLElement {
-    constructor() {
-      super()
-    }
-
-    connectedCallback() {
-      console.log('My Content')
-    }
-  }
-</script>
 </body>
 </html>
 `

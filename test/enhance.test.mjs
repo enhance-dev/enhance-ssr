@@ -2,6 +2,8 @@ import test from 'tape'
 import enhance from '../index.mjs'
 import MyContent from './fixtures/templates/my-content.mjs'
 import MyCounter from './fixtures/templates/my-counter.mjs'
+import MyHeading from './fixtures/templates/my-heading.mjs'
+import MySuperHeading from './fixtures/templates/my-super-heading.mjs'
 import MyLink from './fixtures/templates/my-link.mjs'
 import MyListContainer from './fixtures/templates/my-list-container.mjs'
 import MyList from './fixtures/templates/my-list.mjs'
@@ -851,6 +853,49 @@ test('should support unnamed slot without whitespace', t=> {
     strip(actual),
     strip(expected),
     'Renders content without whitepace into unnamed slot'
+  )
+  t.end()
+})
+
+test('should support nested custom elements with nested slots', t=> {
+  const html = enhance({
+    elements: {
+      'my-heading': MyHeading,
+      'my-super-heading': MySuperHeading
+    }
+  })
+  const actual = html`
+  ${Head()}
+  <my-super-heading>
+    <span slot="emoji">
+      ✨
+    </span>
+    My Heading
+  </my-super-heading>
+  `
+  const expected = `
+<!DOCTYPE html>
+<html>
+<head></head>
+<body>
+  <my-super-heading>
+    <span slot="emoji">
+      ✨
+    </span>
+    <my-heading>
+      <h1>
+        My Heading
+      </h1>
+    </my-heading>
+  </my-super-heading>
+</body>
+</html>
+`
+
+  t.equal(
+    strip(actual),
+    strip(expected),
+    'Renders nested slots in nested custom elements'
   )
   t.end()
 })

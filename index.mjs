@@ -222,8 +222,7 @@ function findSlots(node) {
       if (child.tagName === 'slot') {
         elements.push(child)
       }
-      if (!isCustomElement(child.tagName) &&
-        child.childNodes) {
+      if (child.childNodes) {
         find(child)
       }
     }
@@ -244,8 +243,7 @@ function findInserts(node) {
           }
         }
       }
-      if (!isCustomElement(child.tagName) &&
-          child.childNodes) {
+      if (child.childNodes) {
         find(child)
       }
     }

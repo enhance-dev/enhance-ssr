@@ -91,9 +91,11 @@ test('Passing state through multiple levels', t=> {
 <html>
 <head></head>
 <body>
-  <my-pre-page items=""><my-pre items="">
-  <pre>test</pre>
-  </my-pre></my-pre-page>
+  <my-pre-page items="">
+    <my-pre items="">
+      <pre>test</pre>
+    </my-pre>
+  </my-pre-page>
 </body>
 </html>
 `
@@ -124,8 +126,14 @@ test('should render as div tag with slot name', t=> {
 <my-multiples>
   <div slot="my-content">
     My default text
-    <h3>A smaller heading</h3>
+
+    <h3>
+      A smaller heading
+    </h3>
+
+
     Random text
+
     <code> a code block</code>
   </div>
 </my-multiples>

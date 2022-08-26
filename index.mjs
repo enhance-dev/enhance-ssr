@@ -30,12 +30,14 @@ export default function Enhancer(options={}) {
             frag:expandedTemplate,
             styles:stylesToCollect,
             scripts:scriptsToCollect
-          } = expandTemplate(child, elements, store, styleTransforms, scriptTransforms, collectedScripts)
+          } = expandTemplate(child, elements, store, styleTransforms, scriptTransforms)
           collectedScripts.push(scriptsToCollect)
           collectedStyles.push(stylesToCollect)
           fillSlots(child, expandedTemplate)
         }
-        if (child.childNodes) find(child)
+        if (child.childNodes) {
+          find(child)
+        }
       }
     }
     find(node)
@@ -130,9 +132,9 @@ function expandTemplate(node, elements, store, styleTransforms, scriptTransforms
 function renderTemplate({ name, elements, attrs=[], store={} }) {
   attrs = attrs ? attrsToState(attrs) : {}
   const state = { attrs, store }
-  const templateHasRenderFunction = elements[name].render
+  const templateHasRenderFunction = elements[name]?.render
   const template = templateHasRenderFunction
-    ? elements[name].render
+    ? elements[name]?.render
     : elements[name]
 
   if (template) {
@@ -235,16 +237,9 @@ function findInserts(node) {
   const elements = []
   const find = (node) => {
     for (const child of node.childNodes) {
-      const attrs = child.attrs
-      if (attrs) {
-        for (let i=0; i < attrs.length; i++) {
-          if (attrs[i].name === 'slot') {
-            elements.push(child)
-          }
-        }
-      }
-      if (child.childNodes) {
-        find(child)
+      const hasSlot = child.attrs?.find(attr => attr.name === 'slot')
+      if (hasSlot) {
+        elements.push(child)
       }
     }
   }

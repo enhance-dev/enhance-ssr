@@ -1,6 +1,6 @@
 {
   "name": "@enhance/ssr",
-  "version": "3.0.7",
+  "version": "3.0.8",
   "description": "Server-side rendering for custom elements with template and slots support",
   "engines": {
     "node": ">=14.0.0"

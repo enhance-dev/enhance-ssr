@@ -22,21 +22,23 @@ export default function Enhancer(options={}) {
     const find = (node) => {
       for (const child of node.childNodes) {
         if (isCustomElement(child.tagName)) {
-          if (child.childNodes.length) {
-            const frag = fragment('')
-            frag.childNodes = [...child.childNodes]
+          if (elements[child.tagName]) {
+            if (child.childNodes.length) {
+              const frag = fragment('')
+              frag.childNodes = [...child.childNodes]
+            }
+            const {
+              frag:expandedTemplate,
+              styles:stylesToCollect,
+              scripts:scriptsToCollect
+            } = expandTemplate(child, elements, store, styleTransforms, scriptTransforms)
+            collectedScripts.push(scriptsToCollect)
+            collectedStyles.push(stylesToCollect)
+            fillSlots(child, expandedTemplate)
           }
-          const {
-            frag:expandedTemplate,
-            styles:stylesToCollect,
-            scripts:scriptsToCollect
-          } = expandTemplate(child, elements, store, styleTransforms, scriptTransforms)
-          collectedScripts.push(scriptsToCollect)
-          collectedStyles.push(stylesToCollect)
-          fillSlots(child, expandedTemplate)
-        }
-        if (child.childNodes) {
-          find(child)
+          if (child.childNodes) {
+            find(child)
+          }
         }
       }
     }
@@ -141,7 +143,7 @@ function renderTemplate({ name, elements, attrs=[], store={} }) {
     return fragment(template({ html: render, state }))
   }
   else {
-    console.warn(`Issue rendering template for ${name}.\n`)
+    throw new Error(`Could not find a template function for ${elements[name]}`)
   }
 }
 

@@ -886,3 +886,9 @@ test('should support nested custom elements with nested slots', t=> {
   t.end()
 })
 
+test('should noop custom element with no template', t => {
+  const html = enhance()
+  const out = html`<noop-></noop->`
+  t.ok('noop')
+  t.end()
+})

@@ -892,3 +892,4 @@ test('should not fail when passed a custom element without a template function',
   t.ok(out, 'Does not fail when passed a custom element that has no template function')
   t.end()
 })
+

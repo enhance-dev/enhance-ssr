@@ -134,16 +134,16 @@ function expandTemplate(node, elements, store, styleTransforms, scriptTransforms
 function renderTemplate({ name, elements, attrs=[], store={} }) {
   attrs = attrs ? attrsToState(attrs) : {}
   const state = { attrs, store }
-  const templateHasRenderFunction = elements[name]?.render
-  const template = templateHasRenderFunction
-    ? elements[name]?.render
+  const templateRenderFunction = elements[name].hasOwnProperty('render')
+  const template = templateRenderFunction
+    ? elements[name].render
     : elements[name]
 
-  if (template) {
+  if (template && typeof template === 'function') {
     return fragment(template({ html: render, state }))
   }
   else {
-    throw new Error(`Could not find a template function for ${elements[name]}`)
+    throw new Error(`Could not find the template function for ${name}`)
   }
 }
 

@@ -259,7 +259,6 @@ function replaceSlots(node, slots) {
         return !n.nodeName.startsWith('#')
       }
     )
-    // If this is a named slot
     if (value) {
       if (!slotChildren.length) {
         // Only has text nodes

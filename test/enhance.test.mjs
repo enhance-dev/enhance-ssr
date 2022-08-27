@@ -886,9 +886,9 @@ test('should support nested custom elements with nested slots', t=> {
   t.end()
 })
 
-test('should noop custom element with no template', t => {
+test('should not fail when passed a custom element without a template function', t => {
   const html = enhance()
-  const out = html`<noop-></noop->`
-  t.ok('noop')
+  const out = html`<noop-noop></noop-noop>`
+  t.ok(out, 'Does not fail when passed a custom element that has no template function')
   t.end()
 })

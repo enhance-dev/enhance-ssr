@@ -22,11 +22,11 @@ export default function Enhancer(options={}) {
     const find = (node) => {
       for (const child of node.childNodes) {
         if (isCustomElement(child.tagName)) {
+          if (child.childNodes.length) {
+            const frag = fragment('')
+            frag.childNodes = [...child.childNodes]
+          }
           if (elements[child.tagName]) {
-            if (child.childNodes.length) {
-              const frag = fragment('')
-              frag.childNodes = [...child.childNodes]
-            }
             const {
               frag:expandedTemplate,
               styles:stylesToCollect,
@@ -36,9 +36,9 @@ export default function Enhancer(options={}) {
             collectedStyles.push(stylesToCollect)
             fillSlots(child, expandedTemplate)
           }
-          if (child.childNodes) {
-            find(child)
-          }
+        }
+        if (child.childNodes) {
+          find(child)
         }
       }
     }
@@ -134,7 +134,7 @@ function expandTemplate(node, elements, store, styleTransforms, scriptTransforms
 function renderTemplate({ name, elements, attrs=[], store={} }) {
   attrs = attrs ? attrsToState(attrs) : {}
   const state = { attrs, store }
-  const templateRenderFunction = elements[name].hasOwnProperty('render')
+  const templateRenderFunction = elements[name]?.render
   const template = templateRenderFunction
     ? elements[name].render
     : elements[name]

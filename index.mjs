@@ -132,7 +132,7 @@ function expandTemplate(node, elements, store, styleTransforms, scriptTransforms
 }
 
 function renderTemplate({ name, elements, attrs=[], store={} }) {
-  attrs = attrs ? attrsToState(attrs) : {}
+  attrs = attrs ? attrsToState(attrs) : Object.create(null);
   const state = { attrs, store }
   const templateRenderFunction = elements[name]?.render
   const template = templateRenderFunction
@@ -147,7 +147,7 @@ function renderTemplate({ name, elements, attrs=[], store={} }) {
   }
 }
 
-function attrsToState(attrs=[], obj={}) {
+function attrsToState(attrs=[], obj=Object.create(null)) {
   [...attrs].forEach(attr => obj[attr.name] = decode(attr.value))
   return obj
 }

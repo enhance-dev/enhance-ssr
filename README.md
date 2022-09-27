@@ -2,7 +2,7 @@
 
 Server sider render for [Custom Elements](https://developer.mozilla.org/en-US/docs/Web/Web_Components/Using_custom_elements).
 
-Enhance enables a web standards based workflow that embraces the platform by supporting Custom Elments and [slot syntax](https://developer.mozilla.org/en-US/docs/Web/Web_Components/Using_templates_and_slots#adding_flexibility_with_slots).
+Enhance enables a web standards based workflow that embraces the platform by supporting Custom Elements and [slot syntax](https://developer.mozilla.org/en-US/docs/Web/Web_Components/Using_templates_and_slots#adding_flexibility_with_slots).
 
 
 ## Install

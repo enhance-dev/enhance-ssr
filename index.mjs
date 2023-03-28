@@ -1,6 +1,9 @@
 import { parse, fragment, serialize } from '@begin/parse5'
 import isCustomElement from './lib/is-custom-element.mjs'
 import { encode, decode } from './lib/transcode.mjs'
+import { customAlphabet } from 'nanoid'
+const alphabet = '0123456789abcdefghijklmnopqrstuvwxyz';
+const nanoid = customAlphabet(alphabet, 7);
 
 export default function Enhancer(options={}) {
   const {
@@ -8,15 +11,11 @@ export default function Enhancer(options={}) {
     elements=[],
     scriptTransforms=[],
     styleTransforms=[],
+    uuidFunction=nanoid
   } = options
   const store = Object.assign({}, initialState)
 
-  let count = 0
-  function getID() {
-    return `e${count++}`.toString(16)
-  }
-
-  function processCustomElements(node, elements, store, styleTransforms, scriptTransforms) {
+  function processCustomElements({ node }) {
     const collectedStyles = []
     let collectedScripts = []
     const find = (node) => {
@@ -31,7 +30,7 @@ export default function Enhancer(options={}) {
               frag:expandedTemplate,
               styles:stylesToCollect,
               scripts:scriptsToCollect
-            } = expandTemplate(child, elements, store, styleTransforms, scriptTransforms)
+            } = expandTemplate({ node: child, elements, store, styleTransforms, scriptTransforms, uuidFunction })
             collectedScripts.push(scriptsToCollect)
             collectedStyles.push(stylesToCollect)
             fillSlots(child, expandedTemplate)
@@ -58,7 +57,7 @@ export default function Enhancer(options={}) {
     const {
       collectedStyles,
       collectedScripts
-    } = processCustomElements(body, elements, store, styleTransforms, scriptTransforms)
+    } = processCustomElements({ node: body })
     if (collectedScripts.length) {
       const uniqueScripts = collectedScripts.flat().reduce((acc, script) => {
         const scriptSrc = script?.attrs?.find(a => a.name === 'src')
@@ -104,13 +103,14 @@ function render(strings, ...values) {
 }
 
 
-function expandTemplate(node, elements, store, styleTransforms, scriptTransforms) {
+function expandTemplate({ node, elements, store, styleTransforms, scriptTransforms, uuidFunction }) {
   const tagName = node.tagName
   const frag = renderTemplate({
     name: node.tagName,
     elements,
     attrs: node.attrs,
-    store
+    store,
+    uuidFunction
   }) || ''
   let styles= []
   let scripts = []
@@ -124,16 +124,17 @@ function expandTemplate(node, elements, store, styleTransforms, scriptTransforms
     }
     if (node.nodeName === 'style') {
       frag.childNodes.splice(frag.childNodes.indexOf(node), 1)
-      const transformedStyle = applyStyleTransforms({ node, styleTransforms, tagName, context:"markup" })
+      const transformedStyle = applyStyleTransforms({ node, styleTransforms, tagName, context: 'markup' })
       if (transformedStyle) { styles.push(transformedStyle) }
     }
   }
   return { frag, styles, scripts }
 }
 
-function renderTemplate({ name, elements, attrs=[], store={} }) {
+function renderTemplate({ name, elements, attrs=[], store={}, uuidFunction }) {
   attrs = attrs ? attrsToState(attrs) : {}
-  const state = { attrs, store }
+  const instanceID = uuidFunction()
+  const state = { attrs, store, instanceID }
   const templateRenderFunction = elements[name]?.render
   const template = templateRenderFunction
     ? elements[name].render
@@ -198,8 +199,6 @@ function fillSlots(node, template) {
       const children = node.childNodes
         .filter(n => !inserts.includes(n))
       const slotParentChildNodes = slot.parentNode.childNodes
-      const slotIndex =  slotParentChildNodes
-          .indexOf(slot)
       slotParentChildNodes.splice(
         slotParentChildNodes
           .indexOf(slot),

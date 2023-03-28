@@ -18,6 +18,7 @@ import MyTransformScript from './fixtures/templates/my-transform-script.mjs'
 import MyTransformStyle from './fixtures/templates/my-transform-style.mjs'
 import MySlotAs from './fixtures/templates/my-slot-as.mjs'
 import MyExternalScript from './fixtures/templates/my-external-script.mjs'
+import MyInstanceID from './fixtures/templates/my-instance-id.mjs'
 
 function Head() {
   return `
@@ -890,6 +891,36 @@ test('should not fail when passed a custom element without a template function',
   const html = enhance()
   const out = html`<noop-noop></noop-noop>`
   t.ok(out, 'Does not fail when passed a custom element that has no template function')
+  t.end()
+})
+
+test('should supply instance ID', t => {
+  const html = enhance({
+    uuidFunction: function() { return 'abcd1234' },
+    elements: {
+      'my-instance-id': MyInstanceID
+    }
+  })
+  const actual = html`
+  ${Head()}
+  <my-instance-id></my-instance-id>
+  `
+  const expected = `
+<!DOCTYPE html>
+<html>
+<head></head>
+<body>
+<my-instance-id>
+  <p>abcd1234</p>
+</my-instance-id>
+</body>
+</html>
+  `
+  t.equal(
+    strip(actual),
+    strip(expected),
+    'Has access to instance ID'
+  )
   t.end()
 })
 

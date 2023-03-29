@@ -19,6 +19,8 @@ import MyTransformStyle from './fixtures/templates/my-transform-style.mjs'
 import MySlotAs from './fixtures/templates/my-slot-as.mjs'
 import MyExternalScript from './fixtures/templates/my-external-script.mjs'
 import MyInstanceID from './fixtures/templates/my-instance-id.mjs'
+import MyContextParent from './fixtures/templates/my-context-parent.mjs'
+import MyContextChild from './fixtures/templates/my-context-child.mjs'
 
 function Head() {
   return `
@@ -924,3 +926,53 @@ test('should supply instance ID', t => {
   t.end()
 })
 
+test('should supply context', t => {
+  const html = enhance({
+    elements: {
+      'my-context-parent': MyContextParent,
+      'my-context-child': MyContextChild
+    }
+  })
+  const actual = html`
+  ${Head()}
+  <my-context-parent message="hmmm">
+    <div>
+      <span>
+        <my-context-child></my-context-child>
+      </span>
+    </div>
+    <my-context-parent message="sure">
+      <my-context-child></my-context-child>
+    </my-context-parent>
+  </my-context-parent>
+  `
+  const expected = `
+<!DOCTYPE html>
+<html>
+<head></head>
+<body>
+  <my-context-parent message="hmmm">
+    <div>
+      <span>
+        <my-context-child>
+          <span>hmmm</span>
+        </my-context-child>
+      </span>
+    </div>
+    <my-context-parent message="sure">
+      <my-context-child>
+        <span>sure</span>
+      </my-context-child>
+    </my-context-parent>
+  </my-context-parent>
+</body>
+</html>
+  `
+  t.equal(
+    strip(actual),
+    strip(expected),
+    'Has access to instance ID'
+  )
+  t.end()
+
+})

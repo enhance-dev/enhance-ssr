@@ -18,6 +18,7 @@ export default function Enhancer(options={}) {
   function processCustomElements({ node }) {
     const collectedStyles = []
     let collectedScripts = []
+    const context = {}
     const find = (node) => {
       for (const child of node.childNodes) {
         if (isCustomElement(child.tagName)) {
@@ -30,7 +31,17 @@ export default function Enhancer(options={}) {
               frag:expandedTemplate,
               styles:stylesToCollect,
               scripts:scriptsToCollect
-            } = expandTemplate({ node: child, elements, store, styleTransforms, scriptTransforms, uuidFunction })
+            } = expandTemplate({
+              node: child,
+              elements,
+              state: {
+                context,
+                instanceID: uuidFunction(),
+                store
+              },
+              styleTransforms,
+              scriptTransforms
+            })
             collectedScripts.push(scriptsToCollect)
             collectedStyles.push(stylesToCollect)
             fillSlots(child, expandedTemplate)
@@ -103,14 +114,13 @@ function render(strings, ...values) {
 }
 
 
-function expandTemplate({ node, elements, store, styleTransforms, scriptTransforms, uuidFunction }) {
+function expandTemplate({ node, elements, state, styleTransforms, scriptTransforms }) {
   const tagName = node.tagName
   const frag = renderTemplate({
     name: node.tagName,
     elements,
     attrs: node.attrs,
-    store,
-    uuidFunction
+    state
   }) || ''
   let styles= []
   let scripts = []
@@ -131,10 +141,9 @@ function expandTemplate({ node, elements, store, styleTransforms, scriptTransfor
   return { frag, styles, scripts }
 }
 
-function renderTemplate({ name, elements, attrs=[], store={}, uuidFunction }) {
+function renderTemplate({ name, elements, attrs=[], state={} }) {
   attrs = attrs ? attrsToState(attrs) : {}
-  const instanceID = uuidFunction()
-  const state = { attrs, store, instanceID }
+  state.attrs = attrs
   const templateRenderFunction = elements[name]?.render
   const template = templateRenderFunction
     ? elements[name].render

@@ -21,6 +21,7 @@ import MyExternalScript from './fixtures/templates/my-external-script.mjs'
 import MyInstanceID from './fixtures/templates/my-instance-id.mjs'
 import MyContextParent from './fixtures/templates/my-context-parent.mjs'
 import MyContextChild from './fixtures/templates/my-context-child.mjs'
+import MySomething from './fixtures/templates/my-something.mjs'
 
 function Head() {
   return `
@@ -77,7 +78,7 @@ test('expand template', t => {
   t.end()
 })
 
-test('Passing state through multiple levels', t=> {
+test('Passing state through multiple levels', t => {
   const html = enhance({
     elements: {
       'my-pre-page': MyPrePage,
@@ -111,7 +112,7 @@ test('Passing state through multiple levels', t=> {
   t.end()
 })
 
-test('should render as div tag with slot name', t=> {
+test('should render as div tag with slot name', t => {
   const html = enhance({
     elements: {
       'my-multiples': MyMultiples
@@ -152,19 +153,19 @@ test('should render as div tag with slot name', t=> {
   t.end()
 })
 
-test('should not duplicate slotted elements', t=> {
- const html = enhance({
+test('should not duplicate slotted elements', t => {
+  const html = enhance({
     elements: {
       'my-outline': MyOutline
     }
- })
+  })
 
- const actual = html`
+  const actual = html`
 ${Head()}
 <my-outline>
   <div slot="toc" class="toc">things</div>
 </my-outline>`
- const expected = `
+  const expected = `
 <!DOCTYPE html>
 <html>
 <head>
@@ -185,7 +186,7 @@ ${Head()}
   t.end()
 })
 
-test('fill named slot', t=> {
+test('fill named slot', t => {
   const html = enhance({
     elements: {
       'my-paragraph': MyParagraph
@@ -217,7 +218,7 @@ ${Head()}
   t.end()
 })
 
-test('should not render default content in unnamed slots', t=> {
+test('should not render default content in unnamed slots', t => {
   const html = enhance({
     elements: {
       'my-unnamed': MyUnnamed
@@ -245,7 +246,7 @@ test('should not render default content in unnamed slots', t=> {
   t.end()
 })
 
-test('add authored children to unnamed slot', t=> {
+test('add authored children to unnamed slot', t => {
   const html = enhance({
     elements: {
       'my-content': MyContent
@@ -276,7 +277,7 @@ test('add authored children to unnamed slot', t=> {
   t.end()
 })
 
-test('pass attributes as state', t=> {
+test('pass attributes as state', t => {
   const html = enhance({
     elements: {
       'my-link': MyLink
@@ -323,7 +324,7 @@ test('pass attribute array values correctly', t => {
       'my-list': MyList
     }
   })
-  const things = [{ title: 'one' },{ title: 'two' },{ title: 'three' }]
+  const things = [{ title: 'one' }, { title: 'two' }, { title: 'three' }]
   const actual = html`
   ${Head()}
 <my-list items="${things}"></my-list>
@@ -365,7 +366,7 @@ test('pass attribute array values correctly', t => {
 })
 
 
-test('should update deeply nested slots', t=> {
+test('should update deeply nested slots', t => {
   const html = enhance({
     elements: {
       'my-content': MyContent
@@ -413,14 +414,14 @@ test('should update deeply nested slots', t=> {
   t.end()
 })
 
-test('fill nested rendered slots', t=> {
+test('fill nested rendered slots', t => {
   const html = enhance({
     elements: {
       'my-list-container': MyListContainer,
       'my-list': MyList
     }
   })
-  const items = [{ title: 'one' },{ title: 'two' },{ title: 'three' }]
+  const items = [{ title: 'one' }, { title: 'two' }, { title: 'three' }]
   const actual = html`
   ${Head()}
 <my-list-container items="${items}">
@@ -479,7 +480,7 @@ test('fill nested rendered slots', t=> {
   t.end()
 })
 
-test('should allow supplying custom head tag', t=> {
+test('should allow supplying custom head tag', t => {
   const html = enhance({
     elements: {
       'my-counter': MyCounter
@@ -621,8 +622,8 @@ test('should run style transforms', t => {
       'my-transform-style': MyTransformStyle
     },
     styleTransforms: [
-      function ({ attrs, raw, tagName, context }) {
-        if  (attrs.find(i=>i.name==="scope")?.value==="global"&&context==="template") return ''
+      function({ attrs, raw, tagName, context }) {
+        if (attrs.find(i => i.name === "scope")?.value === "global" && context === "template") return ''
         return `
         ${raw}
         /*
@@ -688,9 +689,9 @@ test('should not add duplicated style tags to head', t => {
       'my-transform-style': MyTransformStyle,
     },
     styleTransforms: [
-      function ({ attrs, raw, tagName, context }) {
+      function({ attrs, raw, tagName, context }) {
         // if tagged as global only add to the head
-        if  (attrs.find(i=>i.name==="scope")?.value==="global"&&context==="template") return ''
+        if (attrs.find(i => i.name === "scope")?.value === "global" && context === "template") return ''
 
         return `
         ${raw}
@@ -818,7 +819,7 @@ test('should add multiple external scripts', t => {
   t.end()
 })
 
-test('should support unnamed slot without whitespace', t=> {
+test('should support unnamed slot without whitespace', t => {
   const html = enhance({
     elements: {
       'my-unnamed': MyUnnamed
@@ -846,7 +847,7 @@ test('should support unnamed slot without whitespace', t=> {
   t.end()
 })
 
-test('should support nested custom elements with nested slots', t=> {
+test('should support nested custom elements with nested slots', t => {
   const html = enhance({
     elements: {
       'my-heading': MyHeading,
@@ -972,6 +973,65 @@ test('should supply context', t => {
     strip(actual),
     strip(expected),
     'Has access to instance ID'
+  )
+  t.end()
+
+})
+
+test('Deduplicate scripts and styles when possible', t => {
+  t.plan(2)
+  const html = enhance({
+    elements: {
+      'my-something': MySomething,
+    }
+  })
+  const actualNoDuplicates = html`
+  ${Head()}
+  <my-something message="one"></my-something>
+  <my-something message="two"></my-something>
+  `
+  const expectedNoDuplicates = `
+<!DOCTYPE html>
+<html>
+<head>
+  <style>"one""two"</style>
+</head>
+<body>
+  <my-something message="one"></my-something>
+  <my-something message="two"></my-something>
+  <script>//"one"</script>
+  <script>//"two"</script>
+</body>
+</html>
+  `
+  t.equal(
+    strip(actualNoDuplicates),
+    strip(expectedNoDuplicates),
+    'Adds all script and style variations'
+  )
+
+  const actualWithDuplicates = html`
+  ${Head()}
+  <my-something message="one"></my-something>
+  <my-something message="one"></my-something>
+  `
+  const expectedWithDuplicates = `
+<!DOCTYPE html>
+<html>
+<head>
+  <style>"one"</style>
+</head>
+<body>
+  <my-something message="one"></my-something>
+  <my-something message="one"></my-something>
+  <script>//"one"</script>
+</body>
+</html>
+  `
+  t.equal(
+    strip(actualWithDuplicates),
+    strip(expectedWithDuplicates),
+    'Deduplicates styles and scripts'
   )
   t.end()
 

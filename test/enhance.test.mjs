@@ -49,25 +49,18 @@ test('return an html function', t => {
 
 test('expand template', t => {
   const html = enhance({
+    bodyContent: true,
     elements: {
-      'my-paragraph': MyParagraph
+      'my-paragraph': MyParagraph,
     }
   })
   const actual = html`
-  ${Head()}
   <my-paragraph></my-paragraph>
   `
   const expected = `
-<!DOCTYPE html>
-<html>
-<head>
-</head>
-<body>
 <my-paragraph>
   <p><span slot="my-text">My default text</span></p>
 </my-paragraph>
-</body>
-</html>
 `
   t.equal(
     strip(actual),
@@ -79,6 +72,7 @@ test('expand template', t => {
 
 test('Passing state through multiple levels', t=> {
   const html = enhance({
+    bodyContent: true,
     elements: {
       'my-pre-page': MyPrePage,
       'my-pre': MyPre
@@ -86,21 +80,14 @@ test('Passing state through multiple levels', t=> {
   })
   const items = ['test']
   const actual = html`
-  ${Head()}
   <my-pre-page items="${items}"></my-pre-page>
   `
   const expected = `
-<!DOCTYPE html>
-<html>
-<head></head>
-<body>
   <my-pre-page items="">
     <my-pre items="">
       <pre>test</pre>
     </my-pre>
   </my-pre-page>
-</body>
-</html>
 `
 
   t.equal(
@@ -113,19 +100,15 @@ test('Passing state through multiple levels', t=> {
 
 test('should render as div tag with slot name', t=> {
   const html = enhance({
+    bodyContent: true,
     elements: {
       'my-multiples': MyMultiples
     }
   })
   const actual = html`
-  ${Head()}
   <my-multiples></my-multiples>
   `
   const expected = `
-<!DOCTYPE html>
-<html>
-<head></head>
-<body>
 <my-multiples>
   <div slot="my-content">
     My default text
@@ -140,8 +123,6 @@ test('should render as div tag with slot name', t=> {
     <code> a code block</code>
   </div>
 </my-multiples>
-</body>
-</html>
 `
 
   t.equal(
@@ -154,27 +135,21 @@ test('should render as div tag with slot name', t=> {
 
 test('should not duplicate slotted elements', t=> {
  const html = enhance({
+    bodyContent: true,
     elements: {
       'my-outline': MyOutline
     }
  })
 
  const actual = html`
-${Head()}
 <my-outline>
   <div slot="toc" class="toc">things</div>
 </my-outline>`
+
  const expected = `
-<!DOCTYPE html>
-<html>
-<head>
-</head>
-<body>
   <my-outline>
     <div slot="toc" class="toc">things</div>
   </my-outline>
-</body>
-</html>
     `
 
   t.equal(
@@ -187,26 +162,20 @@ ${Head()}
 
 test('fill named slot', t=> {
   const html = enhance({
+    bodyContent: true,
     elements: {
       'my-paragraph': MyParagraph
     }
   })
   const actual = html`
-${Head()}
 <my-paragraph id="0">
   <span slot="my-text">Slotted</span>
 </my-paragraph>
   `
   const expected = `
-<!DOCTYPE html>
-<html>
-<head></head>
-<body>
 <my-paragraph id="0">
   <p><span slot="my-text">Slotted</span></p>
 </my-paragraph>
-</body>
-</html>
 `
 
   t.equal(
@@ -219,22 +188,16 @@ ${Head()}
 
 test('should not render default content in unnamed slots', t=> {
   const html = enhance({
+    bodyContent: true,
     elements: {
       'my-unnamed': MyUnnamed
     }
   })
   const actual = html`
-  ${Head()}
   <my-unnamed id="0"></my-unnamed>
   `
   const expected = `
-<!DOCTYPE html>
-<html>
-<head></head>
-<body>
   <my-unnamed id="0"></my-unnamed>
-</body>
-</html>
 `
 
   t.equal(
@@ -247,26 +210,22 @@ test('should not render default content in unnamed slots', t=> {
 
 test('add authored children to unnamed slot', t=> {
   const html = enhance({
+    bodyContent: true,
     elements: {
       'my-content': MyContent
     }
   })
   const actual = html`
-  ${Head()}
   <my-content id="0">
     <h4 slot=title>Custom title</h4>
   </my-content>`
+
   const expected = `
-<!DOCTYPE html>
-<html>
-<head></head>
-<body>
 <my-content id="0">
   <h2>My Content</h2>
   <h4 slot="title">Custom title</h4>
 </my-content>
-</body>
-</html>
+
 `
   t.equal(
     strip(actual),
@@ -299,7 +258,6 @@ ${Head()}
     constructor() {
       super()
     }
-
     connectedCallback() {
       console.log('My Link')
     }
@@ -346,7 +304,6 @@ test('pass attribute array values correctly', t => {
     constructor() {
       super()
     }
-
     connectedCallback() {
       console.log('My List')
     }
@@ -367,12 +324,12 @@ test('pass attribute array values correctly', t => {
 
 test('should update deeply nested slots', t=> {
   const html = enhance({
+    bodyContent: true,
     elements: {
       'my-content': MyContent
     }
   })
   const actual = html`
-  ${Head()}
   <my-content>
     <my-content id="0">
       <h3 slot="title">Second</h3>
@@ -383,10 +340,6 @@ test('should update deeply nested slots', t=> {
   </my-content>`
 
   const expected = `
-<!DOCTYPE html>
-<html>
-<head></head>
-<body>
   <my-content>
     <h2>My Content</h2>
     <h3 slot="title">
@@ -401,8 +354,6 @@ test('should update deeply nested slots', t=> {
       </my-content>
     </my-content>
   </my-content>
-</body>
-</html>
 `
 
   t.equal(
@@ -755,27 +706,20 @@ test('should not add duplicated style tags to head', t => {
 
 test('should respect as attribute', t => {
   const html = enhance({
+    bodyContent: true,
     elements: {
       'my-slot-as': MySlotAs
     },
   })
   const actual = html`
-  ${Head()}
   <my-slot-as></my-slot-as>
   `
   const expected = `
-<!DOCTYPE html>
-<html>
-<head>
-</head>
-<body>
   <my-slot-as>
     <div slot="stuff">
       stuff
     </div>
   </my-slot-as>
-</body>
-</html>
   `
   t.equal(strip(actual), strip(expected), 'respects as attribute')
   t.end()
@@ -820,22 +764,16 @@ test('should add multiple external scripts', t => {
 
 test('should support unnamed slot without whitespace', t=> {
   const html = enhance({
+    bodyContent: true,
     elements: {
       'my-unnamed': MyUnnamed
     }
   })
   const actual = html`
-  ${Head()}
   <my-unnamed>My Text</my-unnamed>
   `
   const expected = `
-<!DOCTYPE html>
-<html>
-<head></head>
-<body>
   <my-unnamed>My Text</my-unnamed>
-</body>
-</html>
 `
 
   t.equal(
@@ -848,13 +786,13 @@ test('should support unnamed slot without whitespace', t=> {
 
 test('should support nested custom elements with nested slots', t=> {
   const html = enhance({
+    bodyContent: true,
     elements: {
       'my-heading': MyHeading,
       'my-super-heading': MySuperHeading
     }
   })
   const actual = html`
-  ${Head()}
   <my-super-heading>
     <span slot="emoji">
       ✨
@@ -863,10 +801,6 @@ test('should support nested custom elements with nested slots', t=> {
   </my-super-heading>
   `
   const expected = `
-<!DOCTYPE html>
-<html>
-<head></head>
-<body>
   <my-super-heading>
     <span slot="emoji">
       ✨
@@ -877,8 +811,6 @@ test('should support nested custom elements with nested slots', t=> {
       </h1>
     </my-heading>
   </my-super-heading>
-</body>
-</html>
 `
 
   t.equal(
@@ -898,25 +830,19 @@ test('should not fail when passed a custom element without a template function',
 
 test('should supply instance ID', t => {
   const html = enhance({
+    bodyContent: true,
     uuidFunction: function() { return 'abcd1234' },
     elements: {
       'my-instance-id': MyInstanceID
     }
   })
   const actual = html`
-  ${Head()}
   <my-instance-id></my-instance-id>
   `
   const expected = `
-<!DOCTYPE html>
-<html>
-<head></head>
-<body>
 <my-instance-id>
   <p>abcd1234</p>
 </my-instance-id>
-</body>
-</html>
   `
   t.equal(
     strip(actual),
@@ -928,13 +854,13 @@ test('should supply instance ID', t => {
 
 test('should supply context', t => {
   const html = enhance({
+    bodyContent: true,
     elements: {
       'my-context-parent': MyContextParent,
       'my-context-child': MyContextChild
     }
   })
   const actual = html`
-  ${Head()}
   <my-context-parent message="hmmm">
     <div>
       <span>
@@ -947,10 +873,6 @@ test('should supply context', t => {
   </my-context-parent>
   `
   const expected = `
-<!DOCTYPE html>
-<html>
-<head></head>
-<body>
   <my-context-parent message="hmmm">
     <div>
       <span>
@@ -965,8 +887,6 @@ test('should supply context', t => {
       </my-context-child>
     </my-context-parent>
   </my-context-parent>
-</body>
-</html>
   `
   t.equal(
     strip(actual),

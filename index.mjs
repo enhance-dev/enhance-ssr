@@ -1,4 +1,4 @@
-import { parse, fragment, serialize } from '@begin/parse5'
+import { parse, fragment, serialize, serializeOuter } from '@begin/parse5'
 import isCustomElement from './lib/is-custom-element.mjs'
 import { encode, decode } from './lib/transcode.mjs'
 import { customAlphabet } from 'nanoid'
@@ -11,7 +11,8 @@ export default function Enhancer(options={}) {
     elements=[],
     scriptTransforms=[],
     styleTransforms=[],
-    uuidFunction=nanoid
+    uuidFunction=nanoid,
+    bodyContent=false
   } = options
   const store = Object.assign({}, initialState)
 
@@ -100,7 +101,12 @@ export default function Enhancer(options={}) {
       }
     }
 
-    return serialize(doc).replace(/__b_\d+/g, '')
+    return bodyContent
+      ? serializeOuter(body.childNodes[0])
+          .replace(/__b_\d+/g, '')
+      : serialize(doc)
+          .replace(/__b_\d+/g, '')
+
   }
 }
 

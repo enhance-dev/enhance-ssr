@@ -143,7 +143,8 @@ You can override the default text by adding a slot attribute with a value that m
 
 #### Unnamed slots
 Enhance supports unnamed slots for when you want to create a container element for all non-slotted child nodes.
-*per the spec default content is not supported in slots
+> ⚠️  per the spec default content is not supported in slots
+
 ```javascript
 export default function MyParagraph({ html }) {
   return html`

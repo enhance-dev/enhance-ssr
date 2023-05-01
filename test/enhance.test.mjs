@@ -891,7 +891,7 @@ test('should supply context', t => {
   t.equal(
     strip(actual),
     strip(expected),
-    'Has access to instance ID'
+    'Passes context data to child elements'
   )
   t.end()
 

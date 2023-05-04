@@ -228,4 +228,57 @@ const output = html`
   `
 ```
 
-> P.S. Enhance works really well with [Architect](https://arc.codes).
+### `context`
+Context enables passing state to child custom elements avoiding the need to pass attributes through multiple nested elements.
+
+// Parent sets context
+```javaScript
+export default function MyContextParent({ html, state }) {
+  const { attrs, context } = state
+  const { message } = attrs
+  context.message = message
+
+  return html`
+    <slot></slot>
+  `
+}
+
+```
+// Child retrieves state from parent supplied context
+```javaScript
+export default function MyContextChild({ html, state }) {
+  const { context } = state
+  const { message } = context
+  return html`
+    <span>${ message }</span>
+  `
+}
+```
+
+// Usage
+```javaScript
+<my-context-parent message="hmmm">
+<div>
+  <span>
+    <my-context-child></my-context-child>
+  </span>
+</div>
+</my-context-parent>
+```
+
+### `instanceID`
+When rendering custom elements from a single template there are times where you may need to target a specific instance.
+
+```javaScript
+export default function MyInstanceID({ html, state }) {
+  const { instanceID='' } = state
+
+  return html`
+<p>${instanceID}</p>
+  `
+}
+
+```
+
+
+> P.S. Enhance works really well with [Begin](https://begin.com).

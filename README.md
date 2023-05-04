@@ -229,9 +229,10 @@ const output = html`
 ```
 
 ### `context`
-Context enables passing state to child custom elements avoiding the need to pass attributes through multiple nested elements.
+There are times you will need to pass state to nested child custom elements. To avoid the tedium of passing attributes through multiple levels of nested elements Enhance SSR supplies a `context` object to add state to.
 
-// Parent sets context
+Parent sets context
+
 ```javaScript
 export default function MyContextParent({ html, state }) {
   const { attrs, context } = state
@@ -244,7 +245,8 @@ export default function MyContextParent({ html, state }) {
 }
 
 ```
-// Child retrieves state from parent supplied context
+Child retrieves state from parent supplied context
+
 ```javaScript
 export default function MyContextChild({ html, state }) {
   const { context } = state
@@ -255,19 +257,20 @@ export default function MyContextChild({ html, state }) {
 }
 ```
 
-// Usage
+Authoring
+
 ```javaScript
 <my-context-parent message="hmmm">
-<div>
-  <span>
-    <my-context-child></my-context-child>
-  </span>
-</div>
+  <div>
+    <span>
+      <my-context-child></my-context-child>
+    </span>
+  </div>
 </my-context-parent>
 ```
 
 ### `instanceID`
-When rendering custom elements from a single template there are times where you may need to target a specific instance.
+When rendering custom elements from a single template there are times where you may need to target a specific instance. The `instanceID` is passed in the `state` object.
 
 ```javaScript
 export default function MyInstanceID({ html, state }) {

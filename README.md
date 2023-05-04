@@ -213,8 +213,8 @@ function MyTransformScript({ html }) {
 console.log(html`<my-transform-script></my-transform-script>`)
 ```
 
-### `contentBody`
-Enhance SSR outputs an entire valid HTML page but you can pass `contentBody: true` to get the content of the body element. This can be useful for when you want to isolate output HTML to only the Custom Element you are authoring.
+### `bodyContent`
+Enhance SSR outputs an entire valid HTML page but you can pass `bodyContent: true` to get the content of the body element. This can be useful for when you want to isolate output HTML to only the Custom Element you are authoring.
 
 ```javaScript
 const html = enhance({

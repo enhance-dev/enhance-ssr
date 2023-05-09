@@ -21,6 +21,8 @@ import MyExternalScript from './fixtures/templates/my-external-script.mjs'
 import MyInstanceID from './fixtures/templates/my-instance-id.mjs'
 import MyContextParent from './fixtures/templates/my-context-parent.mjs'
 import MyContextChild from './fixtures/templates/my-context-child.mjs'
+import MyCustomHeading from './fixtures/templates/my-custom-heading.mjs'
+import MyCustomHeadingWithNamedSlot from './fixtures/templates/my-custom-heading-with-named-slot.mjs'
 
 function Head() {
   return `
@@ -895,4 +897,35 @@ test('should supply context', t => {
   )
   t.end()
 
+})
+
+test.only('Should render nested named slot inside unnamed slot', t=> {
+
+  const html = enhance({
+    bodyContent: true,
+    elements: {
+      'my-custom-heading': MyCustomHeading,
+      'my-custom-heading-with-named-slot': MyCustomHeadingWithNamedSlot
+    }
+  })
+
+  const actual = html`
+    <my-custom-heading-with-named-slot>
+      <span slot="heading-text">Here's my text</span>
+    </my-custom-heading-with-named-slot>
+  `
+  const expected = `
+    <my-custom-heading-with-named-slot>
+      <h1>
+        <span slot="heading-text">Here's my text</span>
+      </h1>
+    </my-custom-heading-with-named-slot>
+  `
+
+  t.equal(
+    strip(actual),
+    strip(expected),
+    'Passes context data to child elements'
+  )
+  t.end()
 })

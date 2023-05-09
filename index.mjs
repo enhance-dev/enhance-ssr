@@ -18,7 +18,7 @@ export default function Enhancer(options={}) {
 
   function processCustomElements({ node }) {
     const collectedStyles = []
-    let collectedScripts = []
+    const collectedScripts = []
     const context = {}
     const find = (node) => {
       for (const child of node.childNodes) {
@@ -101,10 +101,9 @@ export default function Enhancer(options={}) {
       }
     }
 
-    return bodyContent
+    return (bodyContent
       ? serializeOuter(body.childNodes[0])
-          .replace(/__b_\d+/g, '')
-      : serialize(doc)
+      : serialize(doc))
           .replace(/__b_\d+/g, '')
 
   }
@@ -119,7 +118,6 @@ function render(strings, ...values) {
   return collect.join('')
 }
 
-
 function expandTemplate({ node, elements, state, styleTransforms, scriptTransforms }) {
   const tagName = node.tagName
   const frag = renderTemplate({
@@ -128,8 +126,8 @@ function expandTemplate({ node, elements, state, styleTransforms, scriptTransfor
     attrs: node.attrs,
     state
   }) || ''
-  let styles= []
-  let scripts = []
+  const styles= []
+  const scripts = []
   for (const node of frag.childNodes) {
     if (node.nodeName === 'script') {
       frag.childNodes.splice(frag.childNodes.indexOf(node), 1)
@@ -141,7 +139,9 @@ function expandTemplate({ node, elements, state, styleTransforms, scriptTransfor
     if (node.nodeName === 'style') {
       frag.childNodes.splice(frag.childNodes.indexOf(node), 1)
       const transformedStyle = applyStyleTransforms({ node, styleTransforms, tagName, context: 'markup' })
-      if (transformedStyle) { styles.push(transformedStyle) }
+      if (transformedStyle) {
+        styles.push(transformedStyle)
+      }
     }
   }
   return { frag, styles, scripts }
@@ -274,7 +274,7 @@ function replaceSlots(node, slots) {
       }
     )
     if (value) {
-      if (!slotChildren.length) {
+      if (!slotChildren.length || slotChildren.length > 1) {
         // Only has text nodes
         const wrapperSpan = {
           nodeName: asTag ? asTag : 'span',
@@ -288,21 +288,7 @@ function replaceSlots(node, slots) {
         slot.childNodes.length = 0
         slot.childNodes.push(wrapperSpan)
       }
-      else if (slotChildren.length > 1) {
-         // Has multiple children
-         const wrapperDiv = {
-          nodeName: asTag ? asTag : 'span',
-          tagName: asTag ? asTag : 'span',
-          attrs: [{ value, name }],
-          namespaceURI: 'http://www.w3.org/1999/xhtml',
-          childNodes: []
-        }
-
-        wrapperDiv.childNodes = wrapperDiv.childNodes.concat(slot.childNodes)
-        slot.childNodes.length = 0
-        slot.childNodes.push(wrapperDiv)
-      }
-      else {
+      if (slotChildren.length === 1) {
         slotChildren[0].attrs.push({ value, name })
       }
 
@@ -343,41 +329,6 @@ function applyStyleTransforms({ node, styleTransforms, tagName, context='' }) {
   if (!out.length) { return }
   node.childNodes[0].value = out
   return node
-}
-
-function applyTransforms({ fragment, name, scriptTransforms, styleTransforms }) {
-  const scriptNodes = fragment.childNodes.filter(n => n.nodeName === 'script')
-  const styleNodes = fragment.childNodes.filter(n => n.nodeName === 'style')
-
-  if (scriptNodes.length && scriptTransforms.length) {
-    scriptNodes.forEach((s) => {
-        const scriptNode = applyScriptTransforms({ node: s, scriptTransforms, tagName: name })
-      if (scriptNode && scriptNode.childNodes.length) {
-        s.childNodes[0].value = scriptNode.childNodes[0].value
-      }
-    })
-  }
-
-  let prune = []
-  if (styleNodes.length && styleTransforms.length) {
-    styleNodes.forEach((s,i) => {
-      const styleNode = applyStyleTransforms({ node: s, styleTransforms,tagName: name, context:"template" })
-      if (styleNode && s.childNodes.length) {
-        s.childNodes[0].value = styleNode.childNodes[0].value
-      } else { prune.push(i) }
-    })
-  }
-  prune.forEach((i) => fragment.childNodes.splice(fragment.childNodes.indexOf(styleNodes[i]), 1) )
-  scriptNodes.forEach(s => fragment.childNodes.splice(fragment.childNodes.indexOf(s), 1))
-
-  return {
-    transformedFragment: fragment,
-    scriptNodes,
-  }
-}
-
-function appendChildNodes(target, node) {
-  target.childNodes.push(...node.childNodes)
 }
 
 function appendNodes(target, nodes) {

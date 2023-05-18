@@ -12,7 +12,8 @@ export default function Enhancer(options={}) {
     scriptTransforms=[],
     styleTransforms=[],
     uuidFunction=nanoid,
-    bodyContent=false
+    bodyContent=false,
+    stripSlotsFromMarkup=true,
   } = options
   const store = Object.assign({}, initialState)
 
@@ -45,7 +46,7 @@ export default function Enhancer(options={}) {
             })
             collectedScripts.push(scriptsToCollect)
             collectedStyles.push(stylesToCollect)
-            fillSlots(child, expandedTemplate)
+            fillSlots(child, expandedTemplate, stripSlotsFromMarkup)
           }
         }
         if (child.childNodes) {
@@ -168,7 +169,7 @@ function attrsToState(attrs=[], obj={}) {
   return obj
 }
 
-function fillSlots(node, template) {
+function fillSlots(node, template, stripSlotsFromMarkup) {
   const slots = findSlots(template)
   const inserts = findInserts(node)
   const usedSlots = []
@@ -194,13 +195,17 @@ function fillSlots(node, template) {
             if (attr.name === 'slot') {
               const insertSlot = attr.value
               if (insertSlot === slotName) {
-                const slotParentChildNodes = slot.parentNode.childNodes
-                slotParentChildNodes.splice(
-                  slotParentChildNodes
-                    .indexOf(slot),
-                  1,
-                  insert
-                )
+                if (stripSlotsFromMarkup) {
+                  const slotParentChildNodes = slot.parentNode.childNodes
+                  slotParentChildNodes.splice(
+                    slotParentChildNodes
+                      .indexOf(slot),
+                    1,
+                    insert
+                  )
+                } else {
+                  slot.childNodes.push(insert);
+                }
                 usedSlots.push(slot)
               }
             }
@@ -213,13 +218,17 @@ function fillSlots(node, template) {
       slot.childNodes.length = 0
       const children = node.childNodes
         .filter(n => !inserts.includes(n))
-      const slotParentChildNodes = slot.parentNode.childNodes
-      slotParentChildNodes.splice(
-        slotParentChildNodes
-          .indexOf(slot),
-        1,
-        ...children
-      )
+      if (stripSlotsFromMarkup) {
+        const slotParentChildNodes = slot.parentNode.childNodes
+        slotParentChildNodes.splice(
+          slotParentChildNodes
+            .indexOf(slot),
+          1,
+          ...children
+        )
+      } else {
+        slot.childNodes.push(...children);
+      }
     }
   }
 

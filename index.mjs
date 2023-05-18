@@ -232,8 +232,10 @@ function fillSlots(node, template, stripSlotsFromMarkup) {
     }
   }
 
-  const unusedSlots = slots.filter(slot => !usedSlots.includes(slot))
-  replaceSlots(template, unusedSlots)
+  if (stripSlotsFromMarkup) {
+    const unusedSlots = slots.filter(slot => !usedSlots.includes(slot))
+    replaceSlots(template, unusedSlots)
+  }
   const nodeChildNodes = node.childNodes
   nodeChildNodes.splice(
     0,

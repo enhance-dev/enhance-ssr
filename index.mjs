@@ -95,11 +95,11 @@ export default function Enhancer(options={}) {
       }, { })
       const mergedCss = Object.keys(uniqueStyles)
       mergedCss.sort((a, b) => {
-        const aStart = a.trim().substring(0,7);
-        const bStart = b.trim().substring(0,7);
+        const aStart = a.trim().substring(0,7)
+        const bStart = b.trim().substring(0,7)
         if (aStart === '@import' && bStart !== '@import') return -1
         if (aStart !== '@import' && bStart === '@import') return 1
-        return 0;
+        return 0
       })
       const mergedCssString = mergedCss.join('\n')
       const mergedStyles = mergedCssString? `<style>${mergedCssString}</style>`:''

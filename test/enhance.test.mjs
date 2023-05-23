@@ -23,6 +23,9 @@ import MyContextParent from './fixtures/templates/my-context-parent.mjs'
 import MyContextChild from './fixtures/templates/my-context-child.mjs'
 import MyLinkNodeFirst from './fixtures/templates/my-link-node-first.mjs'
 import MyLinkNodeSecond from './fixtures/templates/my-link-node-second.mjs'
+import MyStyleImportFirst from './fixtures/templates/my-style-import-first.mjs'
+import MyStyleImportSecond from './fixtures/templates/my-style-import-second.mjs'
+
 
 function Head() {
   return `
@@ -934,3 +937,38 @@ ${Head()}
   )
   t.end()
 })
+
+test('should hoist css imports', t => {
+  const html = enhance({
+    elements: {
+      'my-style-import-first': MyStyleImportFirst,
+      'my-style-import-second': MyStyleImportSecond
+    }
+  })
+  const actual = html`
+  ${Head()}
+  <my-style-import-first></my-style-import-first>
+  <my-style-import-second></my-style-import-second>
+  `
+
+  const expected = `
+  <!DOCTYPE html>
+  <html>
+  <head>
+  <style>
+  @import 'my-style-import-first.css';
+  @import 'my-style-import-second.css';
+  my-style-import-first { display: block }
+  my-style-import-second { display: block }
+  </style> 
+  </head>
+  <body>
+  <my-style-import-first></my-style-import-first>
+  <my-style-import-second></my-style-import-second>
+  </body>
+  </html>
+  `
+  t.equal(strip(actual), strip(expected), 'Properly hoists CSS imports')
+  t.end()
+})
+

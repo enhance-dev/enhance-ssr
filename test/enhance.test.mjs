@@ -21,8 +21,11 @@ import MyExternalScript from './fixtures/templates/my-external-script.mjs'
 import MyInstanceID from './fixtures/templates/my-instance-id.mjs'
 import MyContextParent from './fixtures/templates/my-context-parent.mjs'
 import MyContextChild from './fixtures/templates/my-context-child.mjs'
+import MyLinkNodeFirst from './fixtures/templates/my-link-node-first.mjs'
+import MyLinkNodeSecond from './fixtures/templates/my-link-node-second.mjs'
 import MyStyleImportFirst from './fixtures/templates/my-style-import-first.mjs'
 import MyStyleImportSecond from './fixtures/templates/my-style-import-second.mjs'
+
 
 function Head() {
   return `
@@ -899,6 +902,42 @@ test('should supply context', t => {
 
 })
 
+test('move link elements to head', t=> {
+  const html = enhance({
+    elements: {
+      'my-link-node-first': MyLinkNodeFirst,
+      'my-link-node-second': MyLinkNodeSecond
+    }
+  })
+  const actual = html`
+${Head()}
+<my-link-node-first>first</my-link-node-first>
+<my-link-node-second>second</my-link-node-second>
+<my-link-node-first>first again</my-link-node-first>
+`
+  const expected = `
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="stylesheet" href="my-link-node-first.css">
+<link rel="stylesheet" href="my-link-node-second.css">
+</head>
+<body>
+<my-link-node-first>first</my-link-node-first>
+<my-link-node-second>second</my-link-node-second>
+<my-link-node-first>first again</my-link-node-first>
+</body>
+</html>
+`
+
+  t.equal(
+    strip(actual),
+    strip(expected),
+    'moves deduplicated link elements to the head'
+  )
+  t.end()
+})
+
 test('should hoist css imports', t => {
   const html = enhance({
     elements: {
@@ -932,3 +971,4 @@ test('should hoist css imports', t => {
   t.equal(strip(actual), strip(expected), 'Properly hoists CSS imports')
   t.end()
 })
+

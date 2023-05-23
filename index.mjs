@@ -19,6 +19,7 @@ export default function Enhancer(options={}) {
   function processCustomElements({ node }) {
     const collectedStyles = []
     const collectedScripts = []
+    const collectedLinks = []
     const context = {}
     const find = (node) => {
       for (const child of node.childNodes) {
@@ -31,7 +32,8 @@ export default function Enhancer(options={}) {
             const {
               frag:expandedTemplate,
               styles:stylesToCollect,
-              scripts:scriptsToCollect
+              scripts:scriptsToCollect,
+              links:linksToCollect
             } = expandTemplate({
               node: child,
               elements,
@@ -45,6 +47,7 @@ export default function Enhancer(options={}) {
             })
             collectedScripts.push(scriptsToCollect)
             collectedStyles.push(stylesToCollect)
+            collectedLinks.push(linksToCollect)
             fillSlots(child, expandedTemplate)
           }
         }
@@ -57,7 +60,8 @@ export default function Enhancer(options={}) {
 
     return {
       collectedStyles,
-      collectedScripts
+      collectedScripts,
+      collectedLinks
     }
   }
 
@@ -68,7 +72,8 @@ export default function Enhancer(options={}) {
     const head = html.childNodes.find(node => node.tagName === 'head')
     const {
       collectedStyles,
-      collectedScripts
+      collectedScripts,
+      collectedLinks
     } = processCustomElements({ node: body })
     if (collectedScripts.length) {
       const uniqueScripts = collectedScripts.flat().reduce((acc, script) => {
@@ -108,6 +113,19 @@ export default function Enhancer(options={}) {
         appendNodes(head, stylesNodeHead)
       }
     }
+    if (collectedLinks.length) {
+      const uniqueLinks = collectedLinks.flat().reduce((acc, link) => {
+        if (link) {
+          return {
+            ...acc,
+            [normalizeLinkHtml(link)]: link
+          }
+        }
+        return {...acc}
+      }, {})
+
+      appendNodes(head, Object.values(uniqueLinks))
+    }
 
     return (bodyContent
       ? serializeOuter(body.childNodes[0])
@@ -136,6 +154,7 @@ function expandTemplate({ node, elements, state, styleTransforms, scriptTransfor
   }) || ''
   const styles= []
   const scripts = []
+  const links = []
   for (const node of frag.childNodes) {
     if (node.nodeName === 'script') {
       frag.childNodes.splice(frag.childNodes.indexOf(node), 1)
@@ -151,8 +170,27 @@ function expandTemplate({ node, elements, state, styleTransforms, scriptTransfor
         styles.push(transformedStyle)
       }
     }
+    if (node.nodeName === 'link') {
+      frag.childNodes.splice(frag.childNodes.indexOf(node), 1)
+      links.push(node)
+    }
   }
-  return { frag, styles, scripts }
+  return { frag, styles, scripts, links }
+}
+
+function normalizeLinkHtml(node) {
+  const attrs = Array.from(node.attrs)
+    .sort((a, b) => {
+      if (a.name < b.name) {
+        return -1;
+      } else if (b.name < a.name) {
+        return 1
+      }
+      return 0
+    })
+    .map(attr => `${attr.name}="${attr.value}"`)
+  
+  return `<link ${attrs.join(' ')} />`
 }
 
 function renderTemplate({ name, elements, attrs=[], state={} }) {

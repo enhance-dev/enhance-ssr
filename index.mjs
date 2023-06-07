@@ -5,6 +5,11 @@ import { customAlphabet } from 'nanoid'
 const alphabet = '0123456789abcdefghijklmnopqrstuvwxyz';
 const nanoid = customAlphabet(alphabet, 7);
 
+/**
+ * Enhancer.
+ *
+ * @param {} options
+ */
 export default function Enhancer(options={}) {
   const {
     initialState={},
@@ -16,11 +21,21 @@ export default function Enhancer(options={}) {
   } = options
   const store = Object.assign({}, initialState)
 
+  /**
+   * processCustomElements.
+   *
+   * @param {}
+   */
   function processCustomElements({ node }) {
     const collectedStyles = []
     const collectedScripts = []
     const collectedLinks = []
     const context = {}
+    /**
+     * find.
+     *
+     * @param {} node
+     */
     const find = (node) => {
       for (const child of node.childNodes) {
         if (isCustomElement(child.tagName)) {
@@ -135,6 +150,12 @@ export default function Enhancer(options={}) {
   }
 }
 
+/**
+ * render.
+ *
+ * @param {} strings
+ * @param {} values
+ */
 function render(strings, ...values) {
   const collect = []
   for (let i = 0; i < strings.length - 1; i++) {
@@ -144,6 +165,11 @@ function render(strings, ...values) {
   return collect.join('')
 }
 
+/**
+ * expandTemplate.
+ *
+ * @param {}
+ */
 function expandTemplate({ node, elements, state, styleTransforms, scriptTransforms }) {
   const tagName = node.tagName
   const frag = renderTemplate({
@@ -178,6 +204,11 @@ function expandTemplate({ node, elements, state, styleTransforms, scriptTransfor
   return { frag, styles, scripts, links }
 }
 
+/**
+ * normalizeLinkHtml.
+ *
+ * @param {} node
+ */
 function normalizeLinkHtml(node) {
   const attrs = Array.from(node.attrs)
     .sort((a, b) => {
@@ -193,6 +224,11 @@ function normalizeLinkHtml(node) {
   return `<link ${attrs.join(' ')} />`
 }
 
+/**
+ * renderTemplate.
+ *
+ * @param {}
+ */
 function renderTemplate({ name, elements, attrs=[], state={} }) {
   attrs = attrs ? attrsToState(attrs) : {}
   state.attrs = attrs
@@ -209,11 +245,23 @@ function renderTemplate({ name, elements, attrs=[], state={} }) {
   }
 }
 
+/**
+ * attrsToState.
+ *
+ * @param {} attrs
+ * @param {} obj
+ */
 function attrsToState(attrs=[], obj={}) {
   [...attrs].forEach(attr => obj[attr.name] = decode(attr.value))
   return obj
 }
 
+/**
+ * fillSlots.
+ *
+ * @param {} node
+ * @param {} template
+ */
 function fillSlots(node, template) {
   const slots = findSlots(template)
   const inserts = findInserts(node)
@@ -279,8 +327,18 @@ function fillSlots(node, template) {
   )
 }
 
+/**
+ * findSlots.
+ *
+ * @param {} node
+ */
 function findSlots(node) {
   const elements = []
+  /**
+   * find.
+   *
+   * @param {} node
+   */
   const find = (node) => {
     for (const child of node.childNodes) {
       if (child.tagName === 'slot') {
@@ -295,8 +353,18 @@ function findSlots(node) {
   return elements
 }
 
+/**
+ * findInserts.
+ *
+ * @param {} node
+ */
 function findInserts(node) {
   const elements = []
+  /**
+   * find.
+   *
+   * @param {} node
+   */
   const find = (node) => {
     for (const child of node.childNodes) {
       const hasSlot = child.attrs?.find(attr => attr.name === 'slot')
@@ -309,6 +377,12 @@ function findInserts(node) {
   return elements
 }
 
+/**
+ * replaceSlots.
+ *
+ * @param {} node
+ * @param {} slots
+ */
 function replaceSlots(node, slots) {
   slots.forEach(slot => {
     const value = slot.attrs.find(attr => attr.name === 'name')?.value
@@ -350,6 +424,11 @@ function replaceSlots(node, slots) {
   return node
 }
 
+/**
+ * applyScriptTransforms.
+ *
+ * @param {}
+ */
 function applyScriptTransforms({ node, scriptTransforms, tagName }) {
   const attrs = node?.attrs || []
   if (node.childNodes.length) {
@@ -365,6 +444,11 @@ function applyScriptTransforms({ node, scriptTransforms, tagName }) {
   return node
 }
 
+/**
+ * applyStyleTransforms.
+ *
+ * @param {}
+ */
 function applyStyleTransforms({ node, styleTransforms, tagName, context='' }) {
   const attrs = node?.attrs || []
   const raw = node.childNodes[0].value
@@ -377,6 +461,12 @@ function applyStyleTransforms({ node, styleTransforms, tagName, context='' }) {
   return node
 }
 
+/**
+ * appendNodes.
+ *
+ * @param {} target
+ * @param {} nodes
+ */
 function appendNodes(target, nodes) {
   target.childNodes.push(...nodes)
 }

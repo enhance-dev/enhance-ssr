@@ -1000,3 +1000,36 @@ test('should hoist css imports', t => {
   t.equal(strip(actual), strip(expected), 'Properly hoists CSS imports')
   t.end()
 })
+
+test('Should render nested named slot inside unnamed slot', t=> {
+
+  const html = enhance({
+    bodyContent: true,
+    elements: {
+      'my-custom-heading': MyCustomHeading,
+      'my-custom-heading-with-named-slot': MyCustomHeadingWithNamedSlot
+    }
+  })
+
+  const actual = html`
+    <my-custom-heading-with-named-slot>
+      <span slot="heading-text">Here's my text</span>
+    </my-custom-heading-with-named-slot>
+  `
+  const expected = `
+    <my-custom-heading-with-named-slot>
+      <my-custom-heading>
+        <h1>
+          <span slot="heading-text">Here's my text</span>
+        </h1>
+      </my-custom-heading>
+    </my-custom-heading-with-named-slot>
+  `
+
+  t.equal(
+    strip(actual),
+    strip(expected),
+    'Renders nested named slot inside unnamed slot'
+  )
+  t.end()
+})

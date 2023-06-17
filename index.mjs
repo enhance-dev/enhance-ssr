@@ -1,6 +1,7 @@
 import { parse, fragment, serialize, serializeOuter } from '@begin/parse5'
 import isCustomElement from './lib/is-custom-element.mjs'
 import { encode, decode } from './lib/transcode.mjs'
+import walk from './lib/walk.mjs'
 import { customAlphabet } from 'nanoid'
 const alphabet = '0123456789abcdefghijklmnopqrstuvwxyz';
 const nanoid = customAlphabet(alphabet, 7);
@@ -21,42 +22,37 @@ export default function Enhancer(options={}) {
     const collectedScripts = []
     const collectedLinks = []
     const context = {}
-    const find = (node) => {
-      for (const child of node.childNodes) {
-        if (isCustomElement(child.tagName)) {
-          if (child.childNodes.length) {
-            const frag = fragment('')
-            frag.childNodes = [...child.childNodes]
-          }
-          if (elements[child.tagName]) {
-            const {
-              frag:expandedTemplate,
-              styles:stylesToCollect,
-              scripts:scriptsToCollect,
-              links:linksToCollect
-            } = expandTemplate({
-              node: child,
-              elements,
-              state: {
-                context,
-                instanceID: uuidFunction(),
-                store
-              },
-              styleTransforms,
-              scriptTransforms
-            })
-            collectedScripts.push(scriptsToCollect)
-            collectedStyles.push(stylesToCollect)
-            collectedLinks.push(linksToCollect)
-            fillSlots(child, expandedTemplate)
-          }
+    
+    walk(node, child => {
+      if (isCustomElement(child.tagName)) {
+        if (child.childNodes.length) {
+          const frag = fragment('')
+          frag.childNodes = [...child.childNodes]
         }
-        if (child.childNodes) {
-          find(child)
+        if (elements[child.tagName]) {
+          const {
+            frag:expandedTemplate,
+            styles:stylesToCollect,
+            scripts:scriptsToCollect,
+            links:linksToCollect
+          } = expandTemplate({
+            node: child,
+            elements,
+            state: {
+              context,
+              instanceID: uuidFunction(),
+              store
+            },
+            styleTransforms,
+            scriptTransforms
+          })
+          collectedScripts.push(scriptsToCollect)
+          collectedStyles.push(stylesToCollect)
+          collectedLinks.push(linksToCollect)
+          fillSlots(child, expandedTemplate)
         }
       }
-    }
-    find(node)
+    })
 
     return {
       collectedStyles,
@@ -131,7 +127,6 @@ export default function Enhancer(options={}) {
       ? serializeOuter(body.childNodes[0])
       : serialize(doc))
           .replace(/__b_\d+/g, '')
-
   }
 }
 
@@ -189,7 +184,7 @@ function normalizeLinkHtml(node) {
       return 0
     })
     .map(attr => `${attr.name}="${attr.value}"`)
-  
+
   return `<link ${attrs.join(' ')} />`
 }
 
@@ -218,6 +213,7 @@ function fillSlots(node, template) {
   const slots = findSlots(template)
   const inserts = findInserts(node)
   const usedSlots = []
+  const usedInserts = []
   for (let i=0; i<slots.length; i++) {
     let hasSlotName = false
     const slot = slots[i]
@@ -248,6 +244,7 @@ function fillSlots(node, template) {
                   insert
                 )
                 usedSlots.push(slot)
+                usedInserts.push(insert)
               }
             }
           }
@@ -258,7 +255,7 @@ function fillSlots(node, template) {
     if (!hasSlotName) {
       slot.childNodes.length = 0
       const children = node.childNodes
-        .filter(n => !inserts.includes(n))
+        .filter(node => !usedInserts.includes(node))
       const slotParentChildNodes = slot.parentNode.childNodes
       slotParentChildNodes.splice(
         slotParentChildNodes
@@ -270,8 +267,8 @@ function fillSlots(node, template) {
   }
 
   const unusedSlots = slots.filter(slot => !usedSlots.includes(slot))
-  replaceSlots(template, unusedSlots)
   const nodeChildNodes = node.childNodes
+  replaceSlots(template, unusedSlots)
   nodeChildNodes.splice(
     0,
     nodeChildNodes.length,

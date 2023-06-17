@@ -25,7 +25,8 @@ import MyLinkNodeFirst from './fixtures/templates/my-link-node-first.mjs'
 import MyLinkNodeSecond from './fixtures/templates/my-link-node-second.mjs'
 import MyStyleImportFirst from './fixtures/templates/my-style-import-first.mjs'
 import MyStyleImportSecond from './fixtures/templates/my-style-import-second.mjs'
-
+import MyCustomHeading from './fixtures/templates/my-custom-heading.mjs'
+import MyCustomHeadingWithNamedSlot from './fixtures/templates/my-custom-heading-with-named-slot.mjs'
 
 function Head() {
   return `
@@ -914,7 +915,7 @@ ${Head()}
 <my-link-node-first>first</my-link-node-first>
 <my-link-node-second>second</my-link-node-second>
 <my-link-node-first>first again</my-link-node-first>
-`
+  `
   const expected = `
 <!DOCTYPE html>
 <html>
@@ -929,7 +930,6 @@ ${Head()}
 </body>
 </html>
 `
-
   t.equal(
     strip(actual),
     strip(expected),
@@ -960,7 +960,7 @@ test('should hoist css imports', t => {
   @import 'my-style-import-second.css';
   my-style-import-first { display: block }
   my-style-import-second { display: block }
-  </style> 
+  </style>
   </head>
   <body>
   <my-style-import-first></my-style-import-first>
@@ -972,3 +972,35 @@ test('should hoist css imports', t => {
   t.end()
 })
 
+test('Should render nested named slot inside unnamed slot', t=> {
+
+  const html = enhance({
+    bodyContent: true,
+    elements: {
+      'my-custom-heading': MyCustomHeading,
+      'my-custom-heading-with-named-slot': MyCustomHeadingWithNamedSlot
+    }
+  })
+
+  const actual = html`
+    <my-custom-heading-with-named-slot>
+      <span slot="heading-text">Here's my text</span>
+    </my-custom-heading-with-named-slot>
+  `
+  const expected = `
+    <my-custom-heading-with-named-slot>
+      <my-custom-heading>
+        <h1>
+          <span slot="heading-text">Here's my text</span>
+        </h1>
+      </my-custom-heading>
+    </my-custom-heading-with-named-slot>
+  `
+
+  t.equal(
+    strip(actual),
+    strip(expected),
+    'Renders nested named slot inside unnamed slot'
+  )
+  t.end()
+})

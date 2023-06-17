@@ -189,7 +189,7 @@ function normalizeLinkHtml(node) {
       return 0
     })
     .map(attr => `${attr.name}="${attr.value}"`)
-  
+
   return `<link ${attrs.join(' ')} />`
 }
 
@@ -218,6 +218,7 @@ function fillSlots(node, template) {
   const slots = findSlots(template)
   const inserts = findInserts(node)
   const usedSlots = []
+  const usedInserts = []
   for (let i=0; i<slots.length; i++) {
     let hasSlotName = false
     const slot = slots[i]
@@ -248,6 +249,7 @@ function fillSlots(node, template) {
                   insert
                 )
                 usedSlots.push(slot)
+                usedInserts.push(insert)
               }
             }
           }
@@ -258,7 +260,7 @@ function fillSlots(node, template) {
     if (!hasSlotName) {
       slot.childNodes.length = 0
       const children = node.childNodes
-        .filter(n => !inserts.includes(n))
+        .filter(node => !usedInserts.includes(node))
       const slotParentChildNodes = slot.parentNode.childNodes
       slotParentChildNodes.splice(
         slotParentChildNodes

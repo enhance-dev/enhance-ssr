@@ -1,6 +1,7 @@
 import { parse, fragment, serialize, serializeOuter } from '@begin/parse5'
 import isCustomElement from './lib/is-custom-element.mjs'
 import { encode, decode } from './lib/transcode.mjs'
+import walk from './lib/walk.mjs'
 import { customAlphabet } from 'nanoid'
 const alphabet = '0123456789abcdefghijklmnopqrstuvwxyz';
 const nanoid = customAlphabet(alphabet, 7);
@@ -21,42 +22,37 @@ export default function Enhancer(options={}) {
     const collectedScripts = []
     const collectedLinks = []
     const context = {}
-    const find = (node) => {
-      for (const child of node.childNodes) {
-        if (isCustomElement(child.tagName)) {
-          if (child.childNodes.length) {
-            const frag = fragment('')
-            frag.childNodes = [...child.childNodes]
-          }
-          if (elements[child.tagName]) {
-            const {
-              frag:expandedTemplate,
-              styles:stylesToCollect,
-              scripts:scriptsToCollect,
-              links:linksToCollect
-            } = expandTemplate({
-              node: child,
-              elements,
-              state: {
-                context,
-                instanceID: uuidFunction(),
-                store
-              },
-              styleTransforms,
-              scriptTransforms
-            })
-            collectedScripts.push(scriptsToCollect)
-            collectedStyles.push(stylesToCollect)
-            collectedLinks.push(linksToCollect)
-            fillSlots(child, expandedTemplate)
-          }
+
+    walk(node, child => {
+      if (isCustomElement(child.tagName)) {
+        if (child.childNodes.length) {
+          const frag = fragment('')
+          frag.childNodes = [...child.childNodes]
         }
-        if (child.childNodes) {
-          find(child)
+        if (elements[child.tagName]) {
+          const {
+            frag:expandedTemplate,
+            styles:stylesToCollect,
+            scripts:scriptsToCollect,
+            links:linksToCollect
+          } = expandTemplate({
+            node: child,
+            elements,
+            state: {
+              context,
+              instanceID: uuidFunction(),
+              store
+            },
+            styleTransforms,
+            scriptTransforms
+          })
+          collectedScripts.push(scriptsToCollect)
+          collectedStyles.push(stylesToCollect)
+          collectedLinks.push(linksToCollect)
+          fillSlots(child, expandedTemplate)
         }
       }
-    }
-    find(node)
+    })
 
     return {
       collectedStyles,
@@ -272,8 +268,8 @@ function fillSlots(node, template) {
   }
 
   const unusedSlots = slots.filter(slot => !usedSlots.includes(slot))
-  replaceSlots(template, unusedSlots)
   const nodeChildNodes = node.childNodes
+  replaceSlots(template, unusedSlots)
   nodeChildNodes.splice(
     0,
     nodeChildNodes.length,

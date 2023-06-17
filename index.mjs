@@ -22,7 +22,7 @@ export default function Enhancer(options={}) {
     const collectedScripts = []
     const collectedLinks = []
     const context = {}
-
+    
     walk(node, child => {
       if (isCustomElement(child.tagName)) {
         if (child.childNodes.length) {
@@ -127,7 +127,6 @@ export default function Enhancer(options={}) {
       ? serializeOuter(body.childNodes[0])
       : serialize(doc))
           .replace(/__b_\d+/g, '')
-
   }
 }
 

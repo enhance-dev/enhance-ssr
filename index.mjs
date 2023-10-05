@@ -13,7 +13,8 @@ export default function Enhancer(options={}) {
     scriptTransforms=[],
     styleTransforms=[],
     uuidFunction=nanoid,
-    bodyContent=false
+    bodyContent=false,
+    enhancedAttr=true
   } = options
   const store = Object.assign({}, initialState)
 
@@ -22,7 +23,7 @@ export default function Enhancer(options={}) {
     const collectedScripts = []
     const collectedLinks = []
     const context = {}
-    
+
     walk(node, child => {
       if (isCustomElement(child.tagName)) {
         if (child.childNodes.length) {
@@ -46,6 +47,10 @@ export default function Enhancer(options={}) {
             styleTransforms,
             scriptTransforms
           })
+
+          if (enhancedAttr) {
+            child.attrs.push({ name: 'enhanced', value:'✨' })
+          }
           collectedScripts.push(scriptsToCollect)
           collectedStyles.push(stylesToCollect)
           collectedLinks.push(linksToCollect)
@@ -191,7 +196,7 @@ function normalizeLinkHtml(node) {
 function renderTemplate({ name, elements, attrs=[], state={} }) {
   attrs = attrs ? attrsToState(attrs) : {}
   state.attrs = attrs
-  const templateRenderFunction = elements[name]?.render
+  const templateRenderFunction = elements[name]?.render || elements[name]?.prototype?.render
   const template = templateRenderFunction
     ? elements[name].render
     : elements[name]

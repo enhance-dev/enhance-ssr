@@ -58,7 +58,8 @@ test('expand template', t => {
     bodyContent: true,
     elements: {
       'my-paragraph': MyParagraph,
-    }
+    },
+    enhancedAttr: false
   })
   const actual = html`
   <my-paragraph></my-paragraph>
@@ -76,13 +77,37 @@ test('expand template', t => {
   t.end()
 })
 
+test('add enhanced attribute', t => {
+  const html = enhance({
+    bodyContent: true,
+    elements: {
+      'my-paragraph': MyParagraph,
+    }
+  })
+  const actual = html`
+  <my-paragraph></my-paragraph>
+  `
+  const expected = `
+<my-paragraph enhanced="✨">
+  <p><span slot="my-text">My default text</span></p>
+</my-paragraph>
+`
+  t.equal(
+    strip(actual),
+    strip(expected),
+    'by gum, i do believe that it does expand that template with slotted default content'
+  )
+  t.end()
+})
+
 test('Passing state through multiple levels', t=> {
   const html = enhance({
     bodyContent: true,
     elements: {
       'my-pre-page': MyPrePage,
       'my-pre': MyPre
-    }
+    },
+    enhancedAttr: false
   })
   const items = ['test']
   const actual = html`
@@ -109,7 +134,8 @@ test('should render as div tag with slot name', t=> {
     bodyContent: true,
     elements: {
       'my-multiples': MyMultiples
-    }
+    },
+    enhancedAttr: false
   })
   const actual = html`
   <my-multiples></my-multiples>
@@ -144,7 +170,8 @@ test('should not duplicate slotted elements', t=> {
     bodyContent: true,
     elements: {
       'my-outline': MyOutline
-    }
+    },
+    enhancedAttr: false
  })
 
  const actual = html`
@@ -171,7 +198,8 @@ test('fill named slot', t=> {
     bodyContent: true,
     elements: {
       'my-paragraph': MyParagraph
-    }
+    },
+    enhancedAttr: false
   })
   const actual = html`
 <my-paragraph id="0">
@@ -197,7 +225,8 @@ test('should not render default content in unnamed slots', t=> {
     bodyContent: true,
     elements: {
       'my-unnamed': MyUnnamed
-    }
+    },
+    enhancedAttr: false
   })
   const actual = html`
   <my-unnamed id="0"></my-unnamed>
@@ -219,7 +248,8 @@ test('add authored children to unnamed slot', t=> {
     bodyContent: true,
     elements: {
       'my-content': MyContent
-    }
+    },
+    enhancedAttr: false
   })
   const actual = html`
   <my-content id="0">
@@ -245,7 +275,8 @@ test('pass attributes as state', t=> {
   const html = enhance({
     elements: {
       'my-link': MyLink
-    }
+    },
+    enhancedAttr: false
   })
   const actual = html`
 ${Head()}
@@ -285,7 +316,8 @@ test('pass attribute array values correctly', t => {
   const html = enhance({
     elements: {
       'my-list': MyList
-    }
+    },
+    enhancedAttr: false
   })
   const things = [{ title: 'one' },{ title: 'two' },{ title: 'three' }]
   const actual = html`
@@ -333,7 +365,8 @@ test('should update deeply nested slots', t=> {
     bodyContent: true,
     elements: {
       'my-content': MyContent
-    }
+    },
+    enhancedAttr: false
   })
   const actual = html`
   <my-content>
@@ -375,7 +408,8 @@ test('fill nested rendered slots', t=> {
     elements: {
       'my-list-container': MyListContainer,
       'my-list': MyList
-    }
+    },
+    enhancedAttr: false
   })
   const items = [{ title: 'one' },{ title: 'two' },{ title: 'three' }]
   const actual = html`
@@ -440,7 +474,8 @@ test('should allow supplying custom head tag', t=> {
   const html = enhance({
     elements: {
       'my-counter': MyCounter
-    }
+    },
+    enhancedAttr: false
   })
   const myHead = `
     <!DOCTYPE html>
@@ -503,7 +538,8 @@ test('should pass store to template', t => {
     elements: {
       'my-store-data': MyStoreData
     },
-    initialState
+    initialState,
+    enhancedAttr: false
   })
   const actual = html`
   ${Head()}
@@ -537,7 +573,8 @@ test('should run script transforms and add only one script per custom element', 
       function({ attrs, raw, tagName }) {
         return `${raw}\n${tagName}`
       }
-    ]
+    ],
+    enhancedAttr: false
   })
   const actual = html`
   ${Head()}
@@ -589,7 +626,8 @@ test('should run style transforms', t => {
         `
 
       }
-    ]
+    ],
+    enhancedAttr: false
   })
   const actual = html`
   ${Head()}
@@ -658,7 +696,8 @@ test('should not add duplicated style tags to head', t => {
         `
 
       }
-    ]
+    ],
+    enhancedAttr: false
   })
   const actual = html`
   ${Head()}
@@ -716,6 +755,7 @@ test('should respect as attribute', t => {
     elements: {
       'my-slot-as': MySlotAs
     },
+    enhancedAttr: false
   })
   const actual = html`
   <my-slot-as></my-slot-as>
@@ -740,7 +780,8 @@ test('should add multiple external scripts', t => {
       function({ attrs, raw, tagName }) {
         return `${raw}\n${tagName}`
       }
-    ]
+    ],
+    enhancedAttr: false
   })
   const actual = html`
   ${Head()}
@@ -773,7 +814,8 @@ test('should support unnamed slot without whitespace', t=> {
     bodyContent: true,
     elements: {
       'my-unnamed': MyUnnamed
-    }
+    },
+    enhancedAttr: false
   })
   const actual = html`
   <my-unnamed>My Text</my-unnamed>
@@ -796,7 +838,8 @@ test('should support nested custom elements with nested slots', t=> {
     elements: {
       'my-heading': MyHeading,
       'my-super-heading': MySuperHeading
-    }
+    },
+    enhancedAttr: false
   })
   const actual = html`
   <my-super-heading>
@@ -840,7 +883,8 @@ test('should supply instance ID', t => {
     uuidFunction: function() { return 'abcd1234' },
     elements: {
       'my-instance-id': MyInstanceID
-    }
+    },
+    enhancedAttr: false
   })
   const actual = html`
   <my-instance-id></my-instance-id>
@@ -864,7 +908,8 @@ test('should supply context', t => {
     elements: {
       'my-context-parent': MyContextParent,
       'my-context-child': MyContextChild
-    }
+    },
+    enhancedAttr: false
   })
   const actual = html`
   <my-context-parent message="hmmm">
@@ -908,7 +953,8 @@ test('move link elements to head', t=> {
     elements: {
       'my-link-node-first': MyLinkNodeFirst,
       'my-link-node-second': MyLinkNodeSecond
-    }
+    },
+    enhancedAttr: false
   })
   const actual = html`
 ${Head()}
@@ -943,7 +989,8 @@ test('should hoist css imports', t => {
     elements: {
       'my-style-import-first': MyStyleImportFirst,
       'my-style-import-second': MyStyleImportSecond
-    }
+    },
+    enhancedAttr: false
   })
   const actual = html`
   ${Head()}
@@ -979,7 +1026,8 @@ test('Should render nested named slot inside unnamed slot', t=> {
     elements: {
       'my-custom-heading': MyCustomHeading,
       'my-custom-heading-with-named-slot': MyCustomHeadingWithNamedSlot
-    }
+    },
+    enhancedAttr: false
   })
 
   const actual = html`

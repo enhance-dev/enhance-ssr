@@ -198,7 +198,7 @@ function renderTemplate({ name, elements, attrs=[], state={} }) {
   state.attrs = attrs
   const templateRenderFunction = elements[name]?.render || elements[name]?.prototype?.render
   const template = templateRenderFunction
-    ? elements[name].render
+    ? templateRenderFunction
     : elements[name]
 
   if (template && typeof template === 'function') {
@@ -219,6 +219,7 @@ function fillSlots(node, template) {
   const inserts = findInserts(node)
   const usedSlots = []
   const usedInserts = []
+  const unnamedSlots = []
   for (let i=0; i<slots.length; i++) {
     let hasSlotName = false
     const slot = slots[i]
@@ -259,17 +260,21 @@ function fillSlots(node, template) {
 
     if (!hasSlotName) {
       slot.childNodes.length = 0
-      const children = node.childNodes
-        .filter(node => !usedInserts.includes(node))
-      const slotParentChildNodes = slot.parentNode.childNodes
-      slotParentChildNodes.splice(
-        slotParentChildNodes
-          .indexOf(slot),
-        1,
-        ...children
-      )
+      unnamedSlots.push([slot, node])
     }
   }
+
+  unnamedSlots.map(([ slot, node ]) => {
+    const children = node.childNodes
+      .filter(node => !usedInserts.includes(node))
+    const slotParentChildNodes = slot.parentNode.childNodes
+    slotParentChildNodes.splice(
+      slotParentChildNodes
+        .indexOf(slot),
+      1,
+      ...children
+    )
+  })
 
   const unusedSlots = slots.filter(slot => !usedSlots.includes(slot))
   const nodeChildNodes = node.childNodes

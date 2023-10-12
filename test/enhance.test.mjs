@@ -1062,7 +1062,7 @@ test('multiple slots with unnamed slot first', t => {
     }
   })
   const actual = html`
-  <multiple-slots>unnamed slot<div slot=slot1>slot One</div></multiple-slots>
+  <multiple-slots>unnamed slot<div slot="slot1">slot One</div></multiple-slots>
   `
   const expected = `
 <multiple-slots enhanced="✨">

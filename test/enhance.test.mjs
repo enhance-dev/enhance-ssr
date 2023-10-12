@@ -27,6 +27,7 @@ import MyStyleImportFirst from './fixtures/templates/my-style-import-first.mjs'
 import MyStyleImportSecond from './fixtures/templates/my-style-import-second.mjs'
 import MyCustomHeading from './fixtures/templates/my-custom-heading.mjs'
 import MyCustomHeadingWithNamedSlot from './fixtures/templates/my-custom-heading-with-named-slot.mjs'
+import MultipleSlots from './fixtures/templates/multiple-slots.mjs'
 
 function Head() {
   return `
@@ -100,7 +101,7 @@ test('add enhanced attribute', t => {
   t.end()
 })
 
-test('Passing state through multiple levels', t=> {
+test('Passing state through multiple levels', t => {
   const html = enhance({
     bodyContent: true,
     elements: {
@@ -129,7 +130,7 @@ test('Passing state through multiple levels', t=> {
   t.end()
 })
 
-test('should render as div tag with slot name', t=> {
+test('should render as div tag with slot name', t => {
   const html = enhance({
     bodyContent: true,
     elements: {
@@ -165,21 +166,21 @@ test('should render as div tag with slot name', t=> {
   t.end()
 })
 
-test('should not duplicate slotted elements', t=> {
- const html = enhance({
+test('should not duplicate slotted elements', t => {
+  const html = enhance({
     bodyContent: true,
     elements: {
       'my-outline': MyOutline
     },
     enhancedAttr: false
- })
+  })
 
- const actual = html`
+  const actual = html`
 <my-outline>
   <div slot="toc" class="toc">things</div>
 </my-outline>`
 
- const expected = `
+  const expected = `
   <my-outline>
     <div slot="toc" class="toc">things</div>
   </my-outline>
@@ -193,7 +194,7 @@ test('should not duplicate slotted elements', t=> {
   t.end()
 })
 
-test('fill named slot', t=> {
+test('fill named slot', t => {
   const html = enhance({
     bodyContent: true,
     elements: {
@@ -220,7 +221,7 @@ test('fill named slot', t=> {
   t.end()
 })
 
-test('should not render default content in unnamed slots', t=> {
+test('should not render default content in unnamed slots', t => {
   const html = enhance({
     bodyContent: true,
     elements: {
@@ -243,7 +244,7 @@ test('should not render default content in unnamed slots', t=> {
   t.end()
 })
 
-test('add authored children to unnamed slot', t=> {
+test('add authored children to unnamed slot', t => {
   const html = enhance({
     bodyContent: true,
     elements: {
@@ -271,7 +272,7 @@ test('add authored children to unnamed slot', t=> {
   t.end()
 })
 
-test('pass attributes as state', t=> {
+test('pass attributes as state', t => {
   const html = enhance({
     elements: {
       'my-link': MyLink
@@ -319,7 +320,7 @@ test('pass attribute array values correctly', t => {
     },
     enhancedAttr: false
   })
-  const things = [{ title: 'one' },{ title: 'two' },{ title: 'three' }]
+  const things = [{ title: 'one' }, { title: 'two' }, { title: 'three' }]
   const actual = html`
   ${Head()}
 <my-list items="${things}"></my-list>
@@ -360,7 +361,7 @@ test('pass attribute array values correctly', t => {
 })
 
 
-test('should update deeply nested slots', t=> {
+test('should update deeply nested slots', t => {
   const html = enhance({
     bodyContent: true,
     elements: {
@@ -403,7 +404,7 @@ test('should update deeply nested slots', t=> {
   t.end()
 })
 
-test('fill nested rendered slots', t=> {
+test('fill nested rendered slots', t => {
   const html = enhance({
     elements: {
       'my-list-container': MyListContainer,
@@ -411,7 +412,7 @@ test('fill nested rendered slots', t=> {
     },
     enhancedAttr: false
   })
-  const items = [{ title: 'one' },{ title: 'two' },{ title: 'three' }]
+  const items = [{ title: 'one' }, { title: 'two' }, { title: 'three' }]
   const actual = html`
   ${Head()}
 <my-list-container items="${items}">
@@ -470,7 +471,7 @@ test('fill nested rendered slots', t=> {
   t.end()
 })
 
-test('should allow supplying custom head tag', t=> {
+test('should allow supplying custom head tag', t => {
   const html = enhance({
     elements: {
       'my-counter': MyCounter
@@ -615,8 +616,8 @@ test('should run style transforms', t => {
       'my-transform-style': MyTransformStyle
     },
     styleTransforms: [
-      function ({ attrs, raw, tagName, context }) {
-        if  (attrs.find(i=>i.name==="scope")?.value==="global"&&context==="template") return ''
+      function({ attrs, raw, tagName, context }) {
+        if (attrs.find(i => i.name === "scope")?.value === "global" && context === "template") return ''
         return `
         ${raw}
         /*
@@ -683,9 +684,9 @@ test('should not add duplicated style tags to head', t => {
       'my-transform-style': MyTransformStyle,
     },
     styleTransforms: [
-      function ({ attrs, raw, tagName, context }) {
+      function({ attrs, raw, tagName, context }) {
         // if tagged as global only add to the head
-        if  (attrs.find(i=>i.name==="scope")?.value==="global"&&context==="template") return ''
+        if (attrs.find(i => i.name === "scope")?.value === "global" && context === "template") return ''
 
         return `
         ${raw}
@@ -809,7 +810,7 @@ test('should add multiple external scripts', t => {
   t.end()
 })
 
-test('should support unnamed slot without whitespace', t=> {
+test('should support unnamed slot without whitespace', t => {
   const html = enhance({
     bodyContent: true,
     elements: {
@@ -832,7 +833,7 @@ test('should support unnamed slot without whitespace', t=> {
   t.end()
 })
 
-test('should support nested custom elements with nested slots', t=> {
+test('should support nested custom elements with nested slots', t => {
   const html = enhance({
     bodyContent: true,
     elements: {
@@ -948,7 +949,7 @@ test('should supply context', t => {
 
 })
 
-test('move link elements to head', t=> {
+test('move link elements to head', t => {
   const html = enhance({
     elements: {
       'my-link-node-first': MyLinkNodeFirst,
@@ -1019,7 +1020,7 @@ test('should hoist css imports', t => {
   t.end()
 })
 
-test('Should render nested named slot inside unnamed slot', t=> {
+test('Should render nested named slot inside unnamed slot', t => {
 
   const html = enhance({
     bodyContent: true,
@@ -1049,6 +1050,29 @@ test('Should render nested named slot inside unnamed slot', t=> {
     strip(actual),
     strip(expected),
     'Renders nested named slot inside unnamed slot'
+  )
+  t.end()
+})
+
+test('multiple slots with unnamed slot first', t => {
+  const html = enhance({
+    bodyContent: true,
+    elements: {
+      'multiple-slots': MultipleSlots,
+    }
+  })
+  const actual = html`
+  <multiple-slots>unnamed slot<div slot="slot1">slot One</div></multiple-slots>
+  `
+  const expected = `
+<multiple-slots enhanced="✨">
+  unnamed slot<div slot="slot1">slot One</div>
+</multiple-slots>
+`
+  t.equal(
+    strip(actual),
+    strip(expected),
+    'Unnamed and named slots work together'
   )
   t.end()
 })

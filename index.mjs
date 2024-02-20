@@ -264,7 +264,7 @@ function fillSlots(node, template) {
     }
   }
 
-  unnamedSlots.map(([ slot, node ]) => {
+  unnamedSlots.forEach(([ slot, node ]) => {
     const children = node.childNodes
       .filter(node => !usedInserts.includes(node))
     const slotParentChildNodes = slot.parentNode.childNodes
@@ -337,7 +337,7 @@ function replaceSlots(node, slots) {
           childNodes: []
         }
 
-        wrapperSpan.childNodes = wrapperSpan.childNodes.concat(slot.childNodes)
+        wrapperSpan.childNodes.push(...slot.childNodes)
         slot.childNodes.length = 0
         slot.childNodes.push(wrapperSpan)
       }

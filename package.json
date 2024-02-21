@@ -14,7 +14,7 @@
   "author": "kj <kj@begin.com>",
   "license": "Apache-2.0",
   "devDependencies": {
-    "tap-arc": "^0.3.4",
+    "tap-arc": "^1.2.2",
     "tape-es": "^1.2.17"
   },
   "dependencies": {

@@ -2,9 +2,9 @@ import { parse, fragment, serialize, serializeOuter } from '@begin/parse5'
 import isCustomElement from './lib/is-custom-element.mjs'
 import { encode, decode } from './lib/transcode.mjs'
 import walk from './lib/walk.mjs'
-import { customAlphabet } from 'nanoid'
-const alphabet = '0123456789abcdefghijklmnopqrstuvwxyz';
-const nanoid = customAlphabet(alphabet, 7);
+// import { customAlphabet } from 'nanoid'
+// const alphabet = '0123456789abcdefghijklmnopqrstuvwxyz';
+// const nanoid = customAlphabet(alphabet, 7);
 
 export default function Enhancer(options={}) {
   const {
@@ -12,7 +12,8 @@ export default function Enhancer(options={}) {
     elements=[],
     scriptTransforms=[],
     styleTransforms=[],
-    uuidFunction=nanoid,
+    // uuidFunction=nanoid,
+    uuidFunction=()=>Math.random().toString(36).substring(2,20),
     bodyContent=false,
     enhancedAttr=true
   } = options

@@ -1076,3 +1076,41 @@ test('multiple slots with unnamed slot first', t => {
   )
   t.end()
 })
+
+test('Should add declarative shadow dom', t => {
+  const html = enhance({
+    bodyContent: true,
+    elements: {
+      'my-paragraph': MyParagraph,
+    },
+    enhancedAttr: true,
+    dsd: true
+  })
+  const actual = html`
+<my-paragraph>
+  <span slot="my-text">
+    correct content
+  </span>
+</my-paragraph>
+  `
+  const expected = `
+<my-paragraph enhanced="✨">
+  <template shadowrootmode="open">
+    <p>
+      <slot name="my-text">
+        My default text
+      </slot>
+    </p>
+  </template>
+  <span slot="my-text">
+    correct content
+  </span>
+</my-paragraph>
+`
+  t.equal(
+    strip(actual),
+    strip(expected),
+    'Expands DSD'
+  )
+  t.end()
+})

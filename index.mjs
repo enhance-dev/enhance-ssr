@@ -6,15 +6,16 @@ import { customAlphabet } from 'nanoid'
 const alphabet = '0123456789abcdefghijklmnopqrstuvwxyz';
 const nanoid = customAlphabet(alphabet, 7);
 
-export default function Enhancer(options={}) {
+export default function Enhancer(options = {}) {
   const {
-    initialState={},
-    elements=[],
-    scriptTransforms=[],
-    styleTransforms=[],
-    uuidFunction=nanoid,
-    bodyContent=false,
-    enhancedAttr=true
+    initialState = {},
+    elements = [],
+    scriptTransforms = [],
+    styleTransforms = [],
+    uuidFunction = nanoid,
+    bodyContent = false,
+    enhancedAttr = true,
+    dsd = false
   } = options
   const store = Object.assign({}, initialState)
 
@@ -31,30 +32,48 @@ export default function Enhancer(options={}) {
           frag.childNodes = [...child.childNodes]
         }
         if (elements[child.tagName]) {
-          const {
-            frag:expandedTemplate,
-            styles:stylesToCollect,
-            scripts:scriptsToCollect,
-            links:linksToCollect
-          } = expandTemplate({
-            node: child,
-            elements,
-            state: {
-              context,
-              instanceID: uuidFunction(),
-              store
-            },
-            styleTransforms,
-            scriptTransforms
-          })
+          if (dsd) {
+            const rendered = renderTemplate({
+              name: child.tagName,
+              elements,
+              attrs: node.attrs,
+              state: {
+                context,
+                instanceID: uuidFunction(),
+                store
+              },
+              usefragment: false
+            })
+            const t = fragment(`<template shadowrootmode="open">${rendered}</template>`)
+            child.childNodes.unshift(...t.childNodes)
+          }
+          else {
+            const {
+              frag: expandedTemplate,
+              styles: stylesToCollect,
+              scripts: scriptsToCollect,
+              links: linksToCollect
+            } = expandTemplate({
+              node: child,
+              elements,
+              state: {
+                context,
+                instanceID: uuidFunction(),
+                store
+              },
+              styleTransforms,
+              scriptTransforms
+            })
+
+            collectedScripts.push(scriptsToCollect)
+            collectedStyles.push(stylesToCollect)
+            collectedLinks.push(linksToCollect)
+            fillSlots(child, expandedTemplate)
+          }
 
           if (enhancedAttr) {
-            child.attrs.push({ name: 'enhanced', value:'✨' })
+            child.attrs.push({ name: 'enhanced', value: '✨' })
           }
-          collectedScripts.push(scriptsToCollect)
-          collectedStyles.push(stylesToCollect)
-          collectedLinks.push(linksToCollect)
-          fillSlots(child, expandedTemplate)
         }
       }
     })
@@ -87,7 +106,7 @@ export default function Enhancer(options={}) {
             [scriptContents || scriptSrcValue]: script
           }
         }
-        return {...acc}
+        return { ...acc }
       }, {})
 
       appendNodes(body, Object.values(uniqueScripts))
@@ -97,18 +116,18 @@ export default function Enhancer(options={}) {
         if (style?.childNodes?.[0]?.value) {
           return { ...acc, [style.childNodes[0].value]: '' }
         }
-        return {...acc}
-      }, { })
+        return { ...acc }
+      }, {})
       const mergedCss = Object.keys(uniqueStyles)
       mergedCss.sort((a, b) => {
-        const aStart = a.trim().substring(0,7)
-        const bStart = b.trim().substring(0,7)
+        const aStart = a.trim().substring(0, 7)
+        const bStart = b.trim().substring(0, 7)
         if (aStart === '@import' && bStart !== '@import') return -1
         if (aStart !== '@import' && bStart === '@import') return 1
         return 0
       })
       const mergedCssString = mergedCss.join('\n')
-      const mergedStyles = mergedCssString? `<style>${mergedCssString}</style>`:''
+      const mergedStyles = mergedCssString ? `<style>${mergedCssString}</style>` : ''
       if (mergedStyles) {
         const stylesNodeHead = [fragment(mergedStyles).childNodes[0]]
         appendNodes(head, stylesNodeHead)
@@ -122,7 +141,7 @@ export default function Enhancer(options={}) {
             [normalizeLinkHtml(link)]: link
           }
         }
-        return {...acc}
+        return { ...acc }
       }, {})
 
       appendNodes(head, Object.values(uniqueLinks))
@@ -131,7 +150,7 @@ export default function Enhancer(options={}) {
     return (bodyContent
       ? serializeOuter(body.childNodes[0])
       : serialize(doc))
-          .replace(/__b_\d+/g, '')
+      .replace(/__b_\d+/g, '')
   }
 }
 
@@ -152,7 +171,7 @@ function expandTemplate({ node, elements, state, styleTransforms, scriptTransfor
     attrs: node.attrs,
     state
   }) || ''
-  const styles= []
+  const styles = []
   const scripts = []
   const links = []
   for (const node of frag.childNodes) {
@@ -193,7 +212,7 @@ function normalizeLinkHtml(node) {
   return `<link ${attrs.join(' ')} />`
 }
 
-function renderTemplate({ name, elements, attrs=[], state={} }) {
+function renderTemplate({ name, elements, attrs = [], state = {}, usefragment = true }) {
   attrs = attrs ? attrsToState(attrs) : {}
   state.attrs = attrs
   const templateRenderFunction = elements[name]?.render || elements[name]?.prototype?.render
@@ -202,14 +221,19 @@ function renderTemplate({ name, elements, attrs=[], state={} }) {
     : elements[name]
 
   if (template && typeof template === 'function') {
-    return fragment(template({ html: render, state }))
+    if (usefragment) {
+      return fragment(template({ html: render, state }))
+    }
+    else {
+      return template({ html: render, state })
+    }
   }
   else {
     throw new Error(`Could not find the template function for ${name}`)
   }
 }
 
-function attrsToState(attrs=[], obj={}) {
+function attrsToState(attrs = [], obj = {}) {
   [...attrs].forEach(attr => obj[attr.name] = decode(attr.value))
   return obj
 }
@@ -220,24 +244,24 @@ function fillSlots(node, template) {
   const usedSlots = []
   const usedInserts = []
   const unnamedSlots = []
-  for (let i=0; i<slots.length; i++) {
+  for (let i = 0; i < slots.length; i++) {
     let hasSlotName = false
     const slot = slots[i]
     const slotAttrs = slot.attrs || []
 
     const slotAttrsLength = slotAttrs.length
-    for (let i=0; i < slotAttrsLength; i++) {
+    for (let i = 0; i < slotAttrsLength; i++) {
       const attr = slotAttrs[i]
       if (attr.name === 'name') {
         hasSlotName = true
         const slotName = attr.value
         const insertsLength = inserts.length
-        for (let i=0; i < insertsLength; i ++) {
+        for (let i = 0; i < insertsLength; i++) {
           const insert = inserts[i]
           const insertAttrs = insert.attrs || []
 
           const insertAttrsLength = insertAttrs.length
-          for (let i=0; i < insertAttrsLength; i++) {
+          for (let i = 0; i < insertAttrsLength; i++) {
             const attr = insertAttrs[i]
             if (attr.name === 'slot') {
               const insertSlot = attr.value
@@ -264,7 +288,7 @@ function fillSlots(node, template) {
     }
   }
 
-  unnamedSlots.forEach(([ slot, node ]) => {
+  unnamedSlots.forEach(([slot, node]) => {
     const children = node.childNodes
       .filter(node => !usedInserts.includes(node))
     const slotParentChildNodes = slot.parentNode.childNodes
@@ -372,7 +396,7 @@ function applyScriptTransforms({ node, scriptTransforms, tagName }) {
   return node
 }
 
-function applyStyleTransforms({ node, styleTransforms, tagName, context='' }) {
+function applyStyleTransforms({ node, styleTransforms, tagName, context = '' }) {
   const attrs = node?.attrs || []
   const raw = node.childNodes[0].value
   let out = raw

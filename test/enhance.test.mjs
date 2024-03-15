@@ -1124,7 +1124,7 @@ test('Should add stylesheet to declarative shadow dom', t => {
     },
     enhancedAttr: true,
     dsd: true,
-    stylesheets: [{ href: '/enhance-styles.css' }]
+    shadowStylesheets: [{ href: '/enhance-styles.css' }]
   })
 
   const actual = html`

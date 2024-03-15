@@ -16,7 +16,7 @@ export default function Enhancer(options = {}) {
     bodyContent = false,
     enhancedAttr = true,
     dsd = false,
-    stylesheets = []
+    shadowStylesheets = []
   } = options
   const store = Object.assign({}, initialState)
 
@@ -47,8 +47,8 @@ export default function Enhancer(options = {}) {
             })
             const t = fragment(`
               <template shadowrootmode="open">
-                ${stylesheets.length
-                ? stylesheets
+                ${shadowStylesheets.length
+                ? shadowStylesheets
                   .map(s => `<link rel="stylesheet" href="${s?.href || ''}">`)
                   ?.join('\n')
                 : ''

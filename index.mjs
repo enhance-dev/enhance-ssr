@@ -15,7 +15,8 @@ export default function Enhancer(options = {}) {
     uuidFunction = nanoid,
     bodyContent = false,
     enhancedAttr = true,
-    dsd = false
+    dsd = false,
+    stylesheets = []
   } = options
   const store = Object.assign({}, initialState)
 
@@ -44,7 +45,17 @@ export default function Enhancer(options = {}) {
               },
               usefragment: false
             })
-            const t = fragment(`<template shadowrootmode="open">${rendered}</template>`)
+            const t = fragment(`
+              <template shadowrootmode="open">
+                ${stylesheets.length
+                ? stylesheets
+                  .map(s => `<link rel="stylesheet" href="${s?.href || ''}">`)
+                  ?.join('\n')
+                : ''
+              }
+                ${rendered}
+              </template>
+            `)
             child.childNodes.unshift(...t.childNodes)
           }
           else {

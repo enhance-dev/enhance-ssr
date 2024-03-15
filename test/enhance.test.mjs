@@ -1114,3 +1114,45 @@ test('Should add declarative shadow dom', t => {
   )
   t.end()
 })
+
+test('Should add stylesheet to declarative shadow dom', t => {
+
+  const html = enhance({
+    bodyContent: true,
+    elements: {
+      'my-paragraph': MyParagraph,
+    },
+    enhancedAttr: true,
+    dsd: true,
+    stylesheets: [{ href: '/enhance-styles.css' }]
+  })
+
+  const actual = html`
+<my-paragraph>
+  <span slot="my-text">
+    correct content
+  </span>
+</my-paragraph>
+  `
+  const expected = `
+<my-paragraph enhanced="✨">
+  <template shadowrootmode="open">
+    <link rel="stylesheet" href="/enhance-styles.css">
+    <p>
+      <slot name="my-text">
+        My default text
+      </slot>
+    </p>
+  </template>
+  <span slot="my-text">
+    correct content
+  </span>
+</my-paragraph>
+`
+  t.equal(
+    strip(actual),
+    strip(expected),
+    'Expands DSD'
+  )
+  t.end()
+})

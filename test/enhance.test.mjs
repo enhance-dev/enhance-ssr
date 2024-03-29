@@ -28,6 +28,10 @@ import MyStyleImportSecond from './fixtures/templates/my-style-import-second.mjs
 import MyCustomHeading from './fixtures/templates/my-custom-heading.mjs'
 import MyCustomHeadingWithNamedSlot from './fixtures/templates/my-custom-heading-with-named-slot.mjs'
 import MultipleSlots from './fixtures/templates/multiple-slots.mjs'
+import MyArticle from './fixtures/templates/my-article.mjs'
+import MyComposite from './fixtures/templates/my-composite.mjs'
+import MyHeader from './fixtures/templates/my-header.mjs'
+import MyFooter from './fixtures/templates/my-footer.mjs'
 
 function Head() {
   return `
@@ -1073,6 +1077,83 @@ test('multiple slots with unnamed slot first', t => {
     strip(actual),
     strip(expected),
     'Unnamed and named slots work together'
+  )
+  t.end()
+})
+
+test("Should add declarative shadow dom", (t) => {
+  const html = enhance({
+    bodyContent: true,
+    dsd:true,
+    elements: {
+      "my-article": MyArticle,
+    },
+  })
+  const actual = html`
+    <my-article>
+      <p slot="content">authored content</p>
+    </my-article>
+  `
+  const expected = `
+<my-article enhanced="✨">
+  <template shadowrootmode="open">
+    <style>
+      p {
+        padding: 2rem;
+        border: 1px solid;
+        border-radius: 2px;
+      }
+    </style>
+    <article>
+      <slot name="content">
+        <p>I'm in the shadow DOM.</p>
+      </slot>
+    </article>
+  </template>
+  <p slot="content">
+    authored content
+  </p>
+</my-article>
+`
+  t.equal(strip(actual), strip(expected), "Expands DSD")
+  t.end()
+})
+
+test("Should append templates to nested slements", (t) => {
+  const html = enhance({
+    bodyContent: true,
+    dsd:true,
+    elements: {
+      "my-composite": MyComposite,
+      "my-header": MyHeader,
+      "my-footer": MyFooter,
+    },
+  })
+  const actual = html`<my-composite></my-composite>`
+  const expected = `
+  <my-composite enhanced="✨">
+    <template shadowrootmode="open">
+      <my-header enhanced="✨">
+        <template shadowrootmode="open">
+          <header>
+            <slot></slot>
+          </header>
+        </template>
+      </my-header>
+      <my-footer enhanced="✨">
+        <template shadowrootmode="open">
+          <footer>
+            <slot></slot>
+          </footer>
+        </template>
+      </my-footer>
+    </template>
+  </my-composite>
+  `
+  t.equal(
+    strip(actual),
+    strip(expected),
+    "Appends template to nested elements",
   )
   t.end()
 })

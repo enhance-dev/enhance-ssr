@@ -168,7 +168,6 @@ const procedures = [
       elements: {
         "simple-element": SimpleElement,
         "styled-element": StyledElement,
-        // 'scripted-element': ScriptedElement,
         "nested-element": NestedElement,
         "slot-element": SlotElement,
         "super-element": SuperElement,
@@ -241,3 +240,5 @@ console.table(
         : `${(maxOps / x["ops/sec"]).toFixed(2)} x slower`,
   })),
 );
+// ↑ table processing source:
+// github.com/eknkc/ssr-benchmark/blob/1cdc460d65f2425d4efeab4ae22e93b38144b10d/src/result-format.js

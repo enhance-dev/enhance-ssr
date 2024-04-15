@@ -26,10 +26,6 @@ export default function Enhancer(options={}) {
 
     walk(node, child => {
       if (isCustomElement(child.tagName)) {
-        if (child.childNodes.length) {
-          const frag = fragment('')
-          frag.childNodes = [...child.childNodes]
-        }
         if (elements[child.tagName]) {
           const {
             frag:expandedTemplate,
@@ -259,14 +255,16 @@ function fillSlots(node, template) {
     }
 
     if (!hasSlotName) {
-      slot.childNodes.length = 0
       unnamedSlots.push([slot, node])
     }
   }
 
   unnamedSlots.forEach(([ slot, node ]) => {
-    const children = node.childNodes
+    const nodeChildren = node.childNodes
       .filter(node => !usedInserts.includes(node))
+    const children = nodeChildren.length
+      ? nodeChildren
+      : [ ...slot.childNodes ]
     const slotParentChildNodes = slot.parentNode.childNodes
     slotParentChildNodes.splice(
       slotParentChildNodes
@@ -278,6 +276,7 @@ function fillSlots(node, template) {
 
   const unusedSlots = slots.filter(slot => !usedSlots.includes(slot))
   const nodeChildNodes = node.childNodes
+
   replaceSlots(template, unusedSlots)
   nodeChildNodes.splice(
     0,

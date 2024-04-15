@@ -1,5 +1,6 @@
 import test from 'tape'
 import enhance from '../index.mjs'
+import MyButton from './fixtures/templates/my-button.mjs'
 import MyContent from './fixtures/templates/my-content.mjs'
 import MyCounter from './fixtures/templates/my-counter.mjs'
 import MyHeading from './fixtures/templates/my-heading.mjs'
@@ -13,7 +14,6 @@ import MyParagraph from './fixtures/templates/my-paragraph.mjs'
 import MyPrePage from './fixtures/templates/my-pre-page.mjs'
 import MyPre from './fixtures/templates/my-pre.mjs'
 import MyStoreData from './fixtures/templates/my-store-data.mjs'
-import MyUnnamed from './fixtures/templates/my-unnamed.mjs'
 import MyTransformScript from './fixtures/templates/my-transform-script.mjs'
 import MyTransformStyle from './fixtures/templates/my-transform-style.mjs'
 import MySlotAs from './fixtures/templates/my-slot-as.mjs'
@@ -51,6 +51,54 @@ test('exist', t => {
 test('return an html function', t => {
   const html = enhance()
   t.ok(html, 'ah yes, this might come in handy')
+  t.end()
+})
+
+test('default content in unnamed slot', t => {
+  const html = enhance({
+    bodyContent: true,
+    elements: {
+      'my-button': MyButton,
+    },
+    enhancedAttr: false
+  })
+  const actual = html`
+  <my-button></my-button>
+  `
+  const expected = `
+<my-button>
+  <button>Submit</button>
+</my-button>
+`
+  t.equal(
+    strip(actual),
+    strip(expected),
+    'Will you look at that! Default content in unnamed slot works.'
+  )
+  t.end()
+})
+
+test('should replace default content in unnamed slot', t => {
+  const html = enhance({
+    bodyContent: true,
+    elements: {
+      'my-button': MyButton,
+    },
+    enhancedAttr: false
+  })
+  const actual = html`
+  <my-button>Let's Go!</my-button>
+  `
+  const expected = `
+<my-button>
+  <button>Let's Go!</button>
+</my-button>
+`
+  t.equal(
+    strip(actual),
+    strip(expected),
+    'Yes we DO replace default content, thank you very much.'
+  )
   t.end()
 })
 
@@ -217,29 +265,6 @@ test('fill named slot', t => {
     strip(actual),
     strip(expected),
     'fills that named slot alright'
-  )
-  t.end()
-})
-
-test('should not render default content in unnamed slots', t => {
-  const html = enhance({
-    bodyContent: true,
-    elements: {
-      'my-unnamed': MyUnnamed
-    },
-    enhancedAttr: false
-  })
-  const actual = html`
-  <my-unnamed id="0"></my-unnamed>
-  `
-  const expected = `
-  <my-unnamed id="0"></my-unnamed>
-`
-
-  t.equal(
-    strip(actual),
-    strip(expected),
-    'Does not render default content in unnamed slots'
   )
   t.end()
 })
@@ -807,29 +832,6 @@ test('should add multiple external scripts', t => {
 </html>
   `
   t.equal(strip(actual), strip(expected), 'Adds multiple external scripts')
-  t.end()
-})
-
-test('should support unnamed slot without whitespace', t => {
-  const html = enhance({
-    bodyContent: true,
-    elements: {
-      'my-unnamed': MyUnnamed
-    },
-    enhancedAttr: false
-  })
-  const actual = html`
-  <my-unnamed>My Text</my-unnamed>
-  `
-  const expected = `
-  <my-unnamed>My Text</my-unnamed>
-`
-
-  t.equal(
-    strip(actual),
-    strip(expected),
-    'Renders content without whitepace into unnamed slot'
-  )
   t.end()
 })
 

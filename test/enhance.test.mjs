@@ -78,6 +78,30 @@ test('default content in unnamed slot', t => {
   t.end()
 })
 
+test('default content in unnamed slot with white space', t => {
+  const html = enhance({
+    bodyContent: true,
+    elements: {
+      'my-button': MyButton,
+    },
+    enhancedAttr: false
+  })
+  const actual = html`
+  <my-button> </my-button>
+  `
+  const expected = `
+<my-button>
+  <button>Submit</button>
+</my-button>
+`
+  t.equal(
+    strip(actual),
+    strip(expected),
+    'Default content in unnamed slot works even with whitespace.'
+  )
+  t.end()
+})
+
 test('should replace default content in unnamed slot', t => {
   const html = enhance({
     bodyContent: true,

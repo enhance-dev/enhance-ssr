@@ -91,13 +91,13 @@ test('default content in unnamed slot with white space', t => {
   `
   const expected = `
 <my-button>
-  <button>Submit</button>
+  <button></button>
 </my-button>
 `
   t.equal(
     strip(actual),
     strip(expected),
-    'Default content in unnamed slot works even with whitespace.'
+    'Whitespace is treated as content for an unnamed slot so no default content is shown. This is how the browser works ¯\_(ツ)_/¯'
   )
   t.end()
 })

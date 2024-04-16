@@ -1,6 +1,6 @@
 # Enhance SSR
 
-Server sider render for [Custom Elements](https://developer.mozilla.org/en-US/docs/Web/Web_Components/Using_custom_elements).
+Server side render for [Custom Elements](https://developer.mozilla.org/en-US/docs/Web/Web_Components/Using_custom_elements).
 
 Enhance enables a web standards based workflow that embraces the platform by supporting Custom Elements and [slot syntax](https://developer.mozilla.org/en-US/docs/Web/Web_Components/Using_templates_and_slots#adding_flexibility_with_slots).
 
@@ -143,22 +143,22 @@ You can override the default text by adding a slot attribute with a value that m
 
 #### Unnamed slots
 Enhance supports unnamed slots for when you want to create a container element for all non-slotted child nodes.
-> ⚠️  per the spec default content is not supported in slots
 
 ```javascript
-export default function MyParagraph({ html }) {
+export default function MyButton({ html }) {
   return html`
-<p>
-  <slot>This will not render.</slot>
-</p>
+<button>
+  <slot>Submit</slot>
+</button>
   `
 }
 ```
 
 ```html
-<my-paragraph>
-  This will render <strong>all</strong> authored children.
-</my-paragraph>
+<my-button></my-button>
+
+<my-button>Save</my-button>
+
 ```
 
 ### Transforms

@@ -213,21 +213,6 @@ function MyTransformScript({ html }) {
 console.log(html`<my-transform-script></my-transform-script>`)
 ```
 
-### `bodyContent`
-Enhance SSR outputs an entire valid HTML page but you can pass `bodyContent: true` to get the content of the body element. This can be useful for when you want to isolate output HTML to only the Custom Element you are authoring.
-
-```javaScript
-const html = enhance({
-  bodyContent: true,
-  elements: {
-    'my-paragraph': MyParagraph,
-  }
-})
-const output = html`
-<my-paragraph></my-paragraph>
-  `
-```
-
 ### `context`
 There are times you will need to pass state to nested child custom elements. To avoid the tedium of passing attributes through multiple levels of nested elements Enhance SSR supplies a `context` object to add state to.
 
@@ -283,5 +268,46 @@ export default function MyInstanceID({ html, state }) {
 
 ```
 
+### `bodyContent`
+Enhance SSR outputs an entire valid HTML page but you can pass `bodyContent: true` to get just the content of the `<body>` element. This can be useful for when you want to isolate the HTML output to just the Custom Element(s) you are authoring.
+
+```javaScript
+const html = enhance({
+  bodyContent: true,
+  elements: {
+    'my-paragraph': MyParagraph,
+  }
+})
+const output = html`
+<my-paragraph></my-paragraph>
+  `
+```
+
+### Integration with `<html>`, `<head>`, and `<body>` elements
+
+Enhance SSR will intelligently merge its rendered `<html>`, `<head>`, and `<body>` elements with any that you provide to it (unless you choose to use the `bodyContent: true` option).
+
+For example:
+
+```js
+const html = enhance({
+  elements: {
+    'my-content': MyContent,
+  }
+})
+
+html`
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>My Website</title>
+  </head>
+  <body class="foo bar">
+    <my-content></my-content>
+  </body>
+</html>
+`
+```
 
 > P.S. Enhance works really well with [Begin](https://begin.com).
+

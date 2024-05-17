@@ -1,0 +1,7 @@
+{
+  "dependencies": {
+    "@enhance/enhance-style-transform": "^0.1.2",
+    "@enhance/import-transform": "^4.0.1",
+    "tinybench": "^2.6.0"
+  }
+}

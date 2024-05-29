@@ -2,9 +2,15 @@ import { parse, fragment, serialize, serializeOuter } from '@begin/parse5'
 import isCustomElement from './lib/is-custom-element.mjs'
 import { encode, decode } from './lib/transcode.mjs'
 import walk from './lib/walk.mjs'
-import { customAlphabet } from 'nanoid'
-const alphabet = '0123456789abcdefghijklmnopqrstuvwxyz';
-const nanoid = customAlphabet(alphabet, 7);
+
+function uuid() {
+  return 'xxxxyxxxx'.replace(/[xy]/g, function(c) {
+    let r = Math.random() * 16 | 0, v = c == 'x'
+      ? r
+      : (r & 0x3 | 0x8)
+    return v.toString(16)
+  })
+}
 
 export default function Enhancer(options={}) {
   const {
@@ -12,7 +18,7 @@ export default function Enhancer(options={}) {
     elements=[],
     scriptTransforms=[],
     styleTransforms=[],
-    uuidFunction=nanoid,
+    uuidFunction=uuid,
     bodyContent=false,
     enhancedAttr=true
   } = options

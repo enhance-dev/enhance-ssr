@@ -265,12 +265,29 @@ function fillSlots(node, template) {
     const children = nodeChildren.length
       ? nodeChildren
       : [ ...slot.childNodes ]
+    const wrappedChildren = children
+      .filter(child => child.nodeName === '#text'
+        ? child.value.trim().length
+        : true
+      )
+      .map(child => {
+        return child.nodeName === '#text'
+          ? {
+              nodeName: 'span',
+              tagName: 'span',
+              attrs: [
+                { name: 'slot', value: ''}
+              ],
+              childNodes: [child]
+            }
+          : child
+      })
     const slotParentChildNodes = slot.parentNode.childNodes
     slotParentChildNodes.splice(
       slotParentChildNodes
         .indexOf(slot),
       1,
-      ...children
+      ...wrappedChildren
     )
   })
 

@@ -67,7 +67,7 @@ test('default content in unnamed slot', t => {
   `
   const expected = `
 <my-button>
-  <button>Submit</button>
+  <button><span slot="">Submit</span></button>
 </my-button>
 `
   t.equal(
@@ -115,7 +115,7 @@ test('should replace default content in unnamed slot', t => {
   `
   const expected = `
 <my-button>
-  <button>Let's Go!</button>
+  <button><span slot="">Let's Go!</span></button>
 </my-button>
 `
   t.equal(
@@ -304,12 +304,14 @@ test('add authored children to unnamed slot', t => {
   const actual = html`
   <my-content id="0">
     <h4 slot=title>Custom title</h4>
+    Just text
   </my-content>`
 
   const expected = `
 <my-content id="0">
   <h2>My Content</h2>
   <h4 slot="title">Custom title</h4>
+  <span slot="">Just text</span>
 </my-content>
 
 `
@@ -883,7 +885,7 @@ test('should support nested custom elements with nested slots', t => {
     </span>
     <my-heading>
       <h1>
-        My Heading
+        <span slot="">My Heading</span>
       </h1>
     </my-heading>
   </my-super-heading>
@@ -997,9 +999,9 @@ ${Head()}
 <link rel="stylesheet" href="my-link-node-second.css">
 </head>
 <body>
-<my-link-node-first>first</my-link-node-first>
-<my-link-node-second>second</my-link-node-second>
-<my-link-node-first>first again</my-link-node-first>
+    <my-link-node-first><span slot="">first</span></my-link-node-first>
+    <my-link-node-second><span slot="">second</span></my-link-node-second>
+    <my-link-node-first><span slot="">first again</span></my-link-node-first>
 </body>
 </html>
 `
@@ -1092,7 +1094,7 @@ test('multiple slots with unnamed slot first', t => {
   `
   const expected = `
 <multiple-slots enhanced="✨">
-  unnamed slot<div slot="slot1">slot One</div>
+    <span slot="">unnamed slot</span><div slot="slot1">slot One</div>
 </multiple-slots>
 `
   t.equal(

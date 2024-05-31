@@ -276,7 +276,7 @@ function fillSlots(node, template) {
               nodeName: 'span',
               tagName: 'span',
               attrs: [
-                { name: 'slot', value: ' '}
+                { name: 'slot', value: ''}
               ],
               childNodes: [child]
             }

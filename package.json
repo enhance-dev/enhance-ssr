@@ -8,14 +8,14 @@
   "type": "module",
   "main": "index.mjs",
   "scripts": {
-    "test": "tape-es ./test/enhance.test.mjs | tap-arc"
+    "test": "tape ./test/enhance.test.mjs | tap-arc"
   },
   "keywords": [],
   "author": "kj <kj@begin.com>",
   "license": "Apache-2.0",
   "devDependencies": {
     "tap-arc": "^1.2.2",
-    "tape-es": "^1.2.17"
+    "tape": "^5.7.5"
   },
   "dependencies": {
     "@begin/parse5": "^0.0.4",

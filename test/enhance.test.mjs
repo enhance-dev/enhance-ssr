@@ -1102,3 +1102,28 @@ test('multiple slots with unnamed slot first', t => {
   )
   t.end()
 })
+
+test('multiple items in the same slot', t => {
+  const html = enhance({
+    bodyContent: true,
+    elements: {
+      'multiple-slots': MultipleSlots,
+    }
+  })
+  const actual = html`
+  <multiple-slots>unnamed slot<div slot="slot1">slot One</div><div slot="slot1">more One</div><div slot="slot1">even more One</div></multiple-slots>
+  `
+  const expected = `
+<multiple-slots enhanced="✨">
+  unnamed slot<div slot="slot1">slot One</div>
+  <div slot="slot1">more One</div>
+  <div slot="slot1">even more One</div>
+</multiple-slots>
+`
+  t.equal(
+    strip(actual),
+    strip(expected),
+    'multiple items in the same slot'
+  )
+  t.end()
+})

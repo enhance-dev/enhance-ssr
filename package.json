@@ -8,9 +8,9 @@
   "type": "module",
   "main": "index.mjs",
   "scripts": {
-    "test": "tape ./test/enhance.test.mjs | tap-arc"
+    "test": "tape ./test/*.test.mjs | tap-arc"
   },
-  "keywords": [],
+  "keywords": ["webcomponents", "customelements", "ssr"],
   "author": "kj <kj@begin.com>",
   "license": "Apache-2.0",
   "devDependencies": {

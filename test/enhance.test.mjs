@@ -28,6 +28,7 @@ import MyStyleImportSecond from './fixtures/templates/my-style-import-second.mjs
 import MyCustomHeading from './fixtures/templates/my-custom-heading.mjs'
 import MyCustomHeadingWithNamedSlot from './fixtures/templates/my-custom-heading-with-named-slot.mjs'
 import MultipleSlots from './fixtures/templates/multiple-slots.mjs'
+import MyEmptyStyle from './fixtures/templates/my-empty-style.mjs'
 
 function Head() {
   return `
@@ -1099,6 +1100,27 @@ test('multiple slots with unnamed slot first', t => {
     strip(actual),
     strip(expected),
     'Unnamed and named slots work together'
+  )
+  t.end()
+})
+
+test('should render empty style tag', t => {
+  const html = enhance({
+    bodyContent: true,
+    elements: {
+      'empty-style': MyEmptyStyle,
+    }
+  })
+  const actual = html`
+    <empty-style></empty-style>
+  `
+  const expected = `
+    <empty-style enhanced="✨"></empty-style>
+  `
+  t.equal(
+    strip(actual),
+    strip(expected),
+    'Does not throw an error when an empty style tag is rendered'
   )
   t.end()
 })

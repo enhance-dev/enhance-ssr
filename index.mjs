@@ -373,13 +373,16 @@ function applyScriptTransforms({ node, scriptTransforms, tagName }) {
 
 function applyStyleTransforms({ node, styleTransforms, tagName, context='' }) {
   const attrs = node?.attrs || []
-  const raw = node.childNodes[0].value
-  let out = raw
-  styleTransforms.forEach(transform => {
-    out = transform({ attrs, raw: out, tagName, context })
-  })
-  if (!out.length) { return }
-  node.childNodes[0].value = out
+  if (node.childNodes.length) {
+    const raw = node.childNodes[0].value
+    let out = raw
+    styleTransforms.forEach(transform => {
+      out = transform({ attrs, raw: out, tagName, context })
+    })
+    if (out.length) {
+      node.childNodes[0].value = out
+    }
+  }
   return node
 }
 

@@ -197,6 +197,9 @@ function renderTemplate({ name, elements, attrs=[], state={} }) {
     ? templateRenderFunction
     : elements[name]
 
+  if (template.constructor.name ==='AsyncFunction')
+    throw Error(`illegal_async_function: ${name} must be a Function not an AsyncFunction`)
+
   if (template && typeof template === 'function') {
     return fragment(template({ html: render, state }))
   }

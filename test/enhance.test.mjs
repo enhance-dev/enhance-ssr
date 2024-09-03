@@ -188,8 +188,8 @@ test('Passing state through multiple levels', t => {
   <my-pre-page items="${items}"></my-pre-page>
   `
   const expected = `
-  <my-pre-page items="">
-    <my-pre items="">
+  <my-pre-page items="test">
+    <my-pre items="test">
       <pre>test</pre>
     </my-pre>
   </my-pre-page>

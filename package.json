@@ -20,5 +20,13 @@
   "dependencies": {
     "@begin/parse5": "^0.0.4",
     "nanoid": "^4.0.1"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/enhance-dev/enhance-ssr.git"
+  },
+  "bugs": {
+    "url": "https://github.com/enhance-dev/enhance-ssr/issues"
+  },
+  "homepage": "https://github.com/enhance-dev/enhance-ssr"
 }
